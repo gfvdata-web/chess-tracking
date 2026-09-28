@@ -105,7 +105,7 @@
       <div class="treino__chance">Antes do lance, sua chance de vitória era <strong>${p.chance_antes}%</strong> (${esc(p.antes)}).</div>
       ${prog ? `<div class="treino__historico">Você já viu esta posição: ${prog.ok} acerto(s), ${prog.erro} erro(s).</div>` : ""}`;
     status("", "");
-    $("t-link-partida").href = `${Jogador.link("./")}#partida=${p.uuid}&lance=${p.ply}`;
+    $("t-link-partida").href = `${Jogador.link("partidas.html")}#partida=${p.uuid}&lance=${p.ply}`;
     $("t-dica").disabled = false;
     $("t-solucao").disabled = false;
     renderPlacar();

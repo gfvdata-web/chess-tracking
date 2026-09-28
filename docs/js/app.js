@@ -1,9 +1,18 @@
 /* ===== Chess Tracking — painel =====
    Lê docs/dados/<usuario>/{partidas,perfil}.json e docs/dados/gerado.json (gerados
    por run_pipeline.py; o jogador vem de js/jogador.js),
-   aplica os filtros de ritmo e período e agrega tudo no navegador. */
+   aplica os filtros de ritmo e período e agrega tudo no navegador.
+   Serve às duas abas com os mesmos filtros: Estatísticas (index.html) e Partidas
+   (partidas.html, a lista + o visualizador) — <body data-pagina> diz qual é. */
 (function () {
   "use strict";
+
+  const EH_PARTIDAS = document.body.dataset.pagina === "partidas";
+  // Links antigos para uma partida (index.html#partida=…) agora abrem na aba Partidas
+  if (!EH_PARTIDAS && location.hash.startsWith("#partida=")) {
+    location.replace("partidas.html" + location.search + location.hash);
+    return;
+  }
 
   // ---------- Constantes ----------
   const RITMOS = ["bullet", "blitz", "rapid", "daily"];           // ordem fixa (cor segue o ritmo)
@@ -82,7 +91,7 @@
   // ---------- Estado ----------
   const estado = {
     ritmo: "todos", periodo: "tudo", de: "", ate: "",
-    abNivel: "familia", abCor: "todas", recentesN: 20,
+    abNivel: "familia", abCor: "todas", recentesN: 50,
     busca: "", resFiltro: "todos", padrao: null,
   };
   let TODAS = [], PERFIL = {}, GERADO = {};
@@ -206,7 +215,7 @@
     const link = $("nome-usuario");
     link.textContent = nome;
     link.href = pf.url || `https://www.chess.com/member/${PERFIL.usuario}`;
-    document.title = `${nome} — Chess Tracking`;
+    document.title = EH_PARTIDAS ? `Partidas de ${nome} — Chess Tracking` : `${nome} — Chess Tracking`;
     if (pf.avatar) { const a = $("avatar"); a.onerror = () => { a.hidden = true; }; a.src = pf.avatar; a.alt = `Avatar de ${nome}`; a.hidden = false; }
     const gerado = GERADO.gerado_em ? new Date(GERADO.gerado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "—";
     $("meta-gerado").textContent = `${fmtInt.format(TODAS.length)} partidas desde ${fmtData(TODAS[0].data)} · atualizado em ${gerado}`;
@@ -269,9 +278,41 @@
     $("data-de").min = $("data-ate").min = TODAS[0].data;
     $("data-de").max = $("data-ate").max = hojeISO();
 
-    montarChips("aberturas-nivel", [{ chave: "familia", nome: "Família" }, { chave: "abertura", nome: "Variante" }], "abNivel");
-    montarChips("aberturas-cor", [{ chave: "todas", nome: "Ambas as cores" }, { chave: "brancas", nome: "Brancas" }, { chave: "pretas", nome: "Pretas" }], "abCor");
-    $("mais-recentes").addEventListener("click", () => { estado.recentesN += 20; renderRecentes(filtradas()); });
+    if (EH_PARTIDAS) {
+      $("mais-recentes").addEventListener("click", () => { estado.recentesN += 50; renderRecentes(filtradas()); });
+    } else {
+      montarChips("aberturas-nivel", [{ chave: "familia", nome: "Família" }, { chave: "abertura", nome: "Variante" }], "abNivel");
+      montarChips("aberturas-cor", [{ chave: "todas", nome: "Ambas as cores" }, { chave: "brancas", nome: "Brancas" }, { chave: "pretas", nome: "Pretas" }], "abCor");
+    }
+  }
+
+  // Estatísticas -> Partidas levando os filtros atuais (e um padrão ou busca, se for o caso)
+  function linkPartidas(extra = {}) {
+    const q = new URLSearchParams(location.search);   // mantém o ?j=
+    if (estado.ritmo !== "todos") q.set("ritmo", estado.ritmo);
+    if (estado.periodo === "custom") { if (estado.de) q.set("de", estado.de); if (estado.ate) q.set("ate", estado.ate); }
+    else if (estado.periodo !== "tudo") q.set("periodo", estado.periodo);
+    for (const [k, v] of Object.entries(extra)) q.set(k, v);
+    return `partidas.html?${q}`;
+  }
+
+  // Na aba Partidas: aplica os filtros que vieram na URL e deixa só o ?j= no endereço
+  function lerFiltrosDaURL() {
+    const q = new URLSearchParams(location.search);
+    if (RITMOS.includes(q.get("ritmo"))) estado.ritmo = q.get("ritmo");
+    const ehData = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "");
+    if (ehData(q.get("de")) || ehData(q.get("ate"))) {
+      estado.periodo = "custom";
+      estado.de = ehData(q.get("de")) ? q.get("de") : "";
+      estado.ate = ehData(q.get("ate")) ? q.get("ate") : "";
+      $("data-de").value = estado.de; $("data-ate").value = estado.ate;
+    } else if (PERIODOS.some((x) => x.chave === q.get("periodo"))) {
+      aplicarPreset(q.get("periodo"));
+    }
+    const pd = TODOS_PADROES.find((x) => x.id === q.get("padrao"));
+    if (pd) { estado.padrao = pd.id; estado.resFiltro = pd.res; }
+    if (q.get("busca")) { estado.busca = q.get("busca"); $("busca").value = estado.busca; }
+    if ([...q.keys()].some((k) => k !== "j")) history.replaceState(null, "", Jogador.link("partidas.html") + location.hash);
   }
 
   // ---------- Gráficos (Chart.js) ----------
@@ -804,12 +845,26 @@
     if (p && window.Visualizador) window.Visualizador.abrir(p, lance);
   }
 
+  // Na aba Estatísticas, padrões e aberturas levam para a lista na aba Partidas
+  function iniciarAtalhos() {
+    document.addEventListener("click", (ev) => {
+      const b = ev.target.closest("[data-padrao]");
+      if (b) location.href = linkPartidas({ padrao: b.dataset.padrao });
+    });
+    const irAbertura = (linha) => { location.href = linkPartidas({ busca: linha.dataset.buscar }); };
+    $("tabela-aberturas").addEventListener("click", (ev) => { const l = ev.target.closest("[data-buscar]"); if (l) irAbertura(l); });
+    $("tabela-aberturas").addEventListener("keydown", (ev) => {
+      const l = ev.target.closest("[data-buscar]");
+      if (l && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); irAbertura(l); }
+    });
+  }
+
   function iniciarExplorador() {
-    montarChips("filtro-resultado", [{ chave: "todos", nome: "Todas" }, ...RESULTADOS.map((r) => ({ chave: r.chave, nome: r.nome }))], "resFiltro", (v) => { estado.resFiltro = v; estado.recentesN = 20; });
+    montarChips("filtro-resultado", [{ chave: "todos", nome: "Todas" }, ...RESULTADOS.map((r) => ({ chave: r.chave, nome: r.nome }))], "resFiltro", (v) => { estado.resFiltro = v; estado.recentesN = 50; });
     let espera;
     $("busca").addEventListener("input", () => {
       clearTimeout(espera);
-      espera = setTimeout(() => { estado.busca = $("busca").value; estado.recentesN = 20; renderRecentes(filtradas()); }, 200);
+      espera = setTimeout(() => { estado.busca = $("busca").value; estado.recentesN = 50; renderRecentes(filtradas()); }, 200);
     });
     $("secao-partidas").addEventListener("click", (ev) => {
       if (ev.target.closest("#limpar-padrao")) { estado.padrao = null; renderRecentes(filtradas()); return; }
@@ -819,26 +874,6 @@
     $("secao-partidas").addEventListener("keydown", (ev) => {
       const linha = ev.target.closest("tr.linha-partida");
       if (linha && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); abrirPartida(linha.dataset.uuid); }
-    });
-    document.addEventListener("click", (ev) => {
-      const b = ev.target.closest("[data-padrao]");
-      if (!b) return;
-      const pd = TODOS_PADROES.find((x) => x.id === b.dataset.padrao);
-      estado.padrao = pd.id; estado.resFiltro = pd.res; estado.recentesN = 20;
-      marcarChips("filtro-resultado", pd.res);
-      renderRecentes(filtradas());
-      $("secao-partidas").scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-    const buscarAbertura = (linha) => {
-      estado.busca = linha.dataset.buscar; $("busca").value = estado.busca;
-      estado.padrao = null; estado.recentesN = 20;
-      renderRecentes(filtradas());
-      $("secao-partidas").scrollIntoView({ behavior: "smooth", block: "start" });
-    };
-    $("tabela-aberturas").addEventListener("click", (ev) => { const l = ev.target.closest("[data-buscar]"); if (l) buscarAbertura(l); });
-    $("tabela-aberturas").addEventListener("keydown", (ev) => {
-      const l = ev.target.closest("[data-buscar]");
-      if (l && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); buscarAbertura(l); }
     });
     const doHash = () => { const m = location.hash.match(/^#partida=([\w-]+)(?:&lance=(\d+))?/); if (m) abrirPartida(m[1], +(m[2] || 0)); };
     window.addEventListener("hashchange", doHash);
@@ -852,8 +887,8 @@
     const c = contar(ps);
     $("resumo-filtro").textContent = `${fmtInt.format(c.n)} partidas no filtro`;
     // Cada seção isolada: um erro numa delas não impede as demais de atualizar
-    const secoes = [renderKPIs, renderRating, renderMultiplos, renderCor, renderForca, renderAberturas, renderFim,
-      renderPadroes, renderMatePeca, renderErros, renderQuando, renderSequencias, renderHeatmap, renderTempo, renderRecentes];
+    const secoes = EH_PARTIDAS ? [renderRecentes] : [renderKPIs, renderRating, renderMultiplos, renderCor, renderForca, renderAberturas,
+      renderFim, renderPadroes, renderMatePeca, renderErros, renderQuando, renderSequencias, renderHeatmap, renderTempo];
     for (const f of secoes) {
       try { f(ps); } catch (e) { console.error(`Seção ${f.name}:`, e); }
     }
@@ -896,9 +931,10 @@
   Jogador.pronto.then(carregar).then(() => {
     window.ChessApp = { usuario: Jogador.nome, MOTIVOS, NOME_RITMO, fmtControle, fmtData };
     renderCabecalho();
+    if (EH_PARTIDAS) lerFiltrosDaURL();
     iniciarFiltros();
     renderizar();
-    iniciarExplorador();
+    if (EH_PARTIDAS) iniciarExplorador(); else iniciarAtalhos();
   }).catch((e) => {
     console.error(e);
     $("nome-usuario").textContent = "Erro ao carregar os dados";

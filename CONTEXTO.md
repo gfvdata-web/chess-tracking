@@ -168,12 +168,17 @@ restante no fim (meu e do adversário) e `apuro` = ficou com < 10% do tempo-base
 
 ## Página
 
-`docs/index.html` + `js/app.js` (estatísticas, padrões, explorador) + `js/visualizador.js`
+Três abas: `docs/index.html` (Estatísticas), `docs/partidas.html` (Partidas: lista + visualizador) e
+`docs/treino.html`. As duas primeiras usam o mesmo `js/app.js` com os mesmos filtros de ritmo e
+período (`<body data-pagina>` diz qual é); clicar num padrão ou numa abertura nas Estatísticas abre
+a aba Partidas já filtrada (`?ritmo=&periodo=|de=&ate=&padrao=|busca=`, lidos e limpos da URL).
+`js/visualizador.js`
 (partida lance a lance, com o tabuleiro [chessground](https://github.com/lichess-org/chessground)
 10.4.0 via jsDelivr) + `css/estilo.css`, Chart.js 4.4.3 via jsDelivr, GoatCounter.
 Jogador na URL: `?j=<usuario>` (sem ele, ou com uma conta que não existe, abre o primeiro do
 `jogadores.json`); `js/jogador.js` monta o seletor e mantém o `?j=` nas abas.
-Link direto para uma partida: `?j=<usuario>#partida=<uuid>&lance=<n>`.
+Link direto para uma partida: `partidas.html?j=<usuario>#partida=<uuid>&lance=<n>` (links antigos
+para `index.html#partida=…` redirecionam para lá).
 Filtros (ritmo e período) valem para a página inteira; toda agregação é feita no navegador.
 Cores de série validadas para daltonismo e contraste nos modos claro e escuro; todo gráfico
 tem um "Ver dados" com a tabela equivalente.

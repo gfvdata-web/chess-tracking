@@ -10,7 +10,8 @@ estática, com seletor de jogador no topo, com:
   e força do adversário, como as partidas terminam, sequências, atividade e gestão de tempo;
 - **padrões de vitória e derrota** que se repetem (virada, vantagem desperdiçada, dama perdida,
   sem roque, tipos de mate, erros graves por fase…), cada um clicável para listar as partidas;
-- **visualizador lance a lance** de qualquer partida do histórico, com relógio, saldo de
+- **aba Partidas** (`partidas.html`): o histórico, da mais recente para a mais antiga, com busca e
+  filtros, e o **visualizador lance a lance** de qualquer partida, com relógio, saldo de
   material e — quando a partida já foi analisada pelo **Stockfish** — avaliação, classificação
   de cada lance (imprecisão/erro/erro grave), melhor lance e comentário em português;
 - **aba Treino** (`treino.html`): as posições logo antes de cada erro grave do jogador, para achar o
@@ -106,7 +107,7 @@ gh workflow run atualizar-partidas.yml -f orcamento=45
 | `src/analise/treino.py` | 4 | Critério das posições de treino (erro grave sem estar perdido) |
 | `src/publicacao/painel.py` | 5 | Gera `docs/dados/<usuario>/` (tabela de partidas + lances por mês) e o índice `docs/dados/jogadores.json` |
 | `src/publicacao/treino.py` | 5 | Gera `docs/dados/<usuario>/treino.json` (posições, lances legais, soluções) |
-| `docs/` | 6 | Página estática: `js/jogador.js` (seletor de jogador) + `index.html` + `js/app.js` (estatísticas) + `js/visualizador.js` (partidas); `treino.html` + `js/treino.js` |
+| `docs/` | 6 | Página estática: `js/jogador.js` (seletor de jogador) + `index.html` e `partidas.html` + `js/app.js` (estatísticas e lista, mesmos filtros) + `js/visualizador.js` (partida lance a lance); `treino.html` + `js/treino.js` |
 
 ## Licença dos dados
 

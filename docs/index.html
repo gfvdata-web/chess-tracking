@@ -9,7 +9,7 @@
   <script>try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
   <script data-goatcounter="https://gfvdata.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
-<body>
+<body data-pagina="estatisticas">
   <div class="tema-switch" id="tema-switch" role="group" aria-label="Tema da página">
     <button type="button" class="tema-switch__btn" data-tema="light" aria-pressed="false">
       <span aria-hidden="true">☀️</span><span class="tema-switch__label">Claro</span>
@@ -33,6 +33,7 @@
       <div class="ratings" id="ratings"></div>
       <nav class="abas" aria-label="Seções">
         <a class="aba" href="./" aria-current="page">Estatísticas</a>
+        <a class="aba" href="partidas.html">Partidas</a>
         <a class="aba" href="treino.html">Treino</a>
       </nav>
     </div>
@@ -183,20 +184,6 @@
         <div class="card" id="card-apuro"></div>
       </div>
     </section>
-
-    <section class="secao" id="secao-partidas">
-      <h2 class="titulo-secao">Partidas</h2>
-      <p class="descricao-secao">Clique numa partida para revê-la lance a lance, com a análise do motor quando disponível.</p>
-      <div class="card">
-        <div class="controles-card">
-          <input type="search" class="busca" id="busca" placeholder="Buscar adversário ou abertura…" aria-label="Buscar adversário ou abertura" />
-          <div class="chips" id="filtro-resultado"></div>
-          <span id="filtro-padrao"></span>
-        </div>
-        <div class="tabela-wrap" id="tabela-recentes"></div>
-        <button type="button" class="botao" id="mais-recentes" hidden>Mostrar mais</button>
-      </div>
-    </section>
   </main>
 
   <footer class="rodape">
@@ -206,51 +193,10 @@
     </div>
   </footer>
 
-  <dialog class="visualizador" id="visualizador" aria-labelledby="vis-titulo" tabindex="-1">
-    <div class="vis__topo">
-      <div>
-        <h2 class="vis__titulo" id="vis-titulo"></h2>
-        <p class="vis__sub" id="vis-sub"></p>
-      </div>
-      <div class="vis__acoes">
-        <a class="botao botao--peq" id="vis-link" target="_blank" rel="noopener">Abrir no Chess.com ↗</a>
-        <button type="button" class="botao botao--peq" id="vis-fechar" aria-label="Fechar">✕</button>
-      </div>
-    </div>
-    <div class="vis__corpo">
-      <div class="vis__esq">
-        <div class="vis__jogador" id="vis-jog-topo"></div>
-        <div class="vis__tabuleiro-linha">
-          <div class="vis__barra-aval" id="vis-barra" aria-hidden="true"><div class="vis__barra-brancas" id="vis-barra-b"></div><span id="vis-barra-txt"></span></div>
-          <div class="vis__tabuleiro"><div id="vis-tabuleiro"></div></div>
-        </div>
-        <div class="vis__jogador" id="vis-jog-base"></div>
-        <div class="vis__nav" role="group" aria-label="Navegação">
-          <button type="button" class="botao botao--peq" data-nav="inicio" aria-label="Início">⏮</button>
-          <button type="button" class="botao botao--peq" data-nav="ant" aria-label="Lance anterior">◀</button>
-          <button type="button" class="botao botao--peq" data-nav="prox" aria-label="Próximo lance">▶</button>
-          <button type="button" class="botao botao--peq" data-nav="fim" aria-label="Fim">⏭</button>
-          <button type="button" class="botao botao--peq" data-nav="virar" aria-label="Virar tabuleiro">⇅</button>
-        </div>
-        <div class="vis__nav" id="vis-nav-erros" role="group" aria-label="Seus erros" hidden>
-          <button type="button" class="botao botao--peq" data-nav="erro-ant">◀ Seu erro anterior</button>
-          <button type="button" class="botao botao--peq" data-nav="erro-prox">Seu próximo erro ▶</button>
-        </div>
-      </div>
-      <div class="vis__dir">
-        <div class="vis__comentario" id="vis-comentario" aria-live="polite"></div>
-        <div class="vis__lances" id="vis-lances"></div>
-        <div class="vis__resumo" id="vis-resumo"></div>
-      </div>
-    </div>
-    <div class="vis__grafico"><p class="nota" id="vis-nota-grafico"></p><div class="area-grafico area-grafico--baixa"><canvas id="g-vis"></canvas></div></div>
-  </dialog>
-
   <div class="dica" id="dica" role="tooltip"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="js/jogador.js"></script>
-  <script src="js/visualizador.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
