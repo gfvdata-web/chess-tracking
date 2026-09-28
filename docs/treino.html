@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Treino — Chess Tracking</title>
-  <meta name="description" content="Treino com as posições em que cometi erros graves nas minhas partidas do Chess.com." />
+  <meta name="description" content="Treino com as posições dos erros graves nas partidas do Chess.com de cada jogador." />
   <link rel="stylesheet" href="css/estilo.css" />
   <script>try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
   <script data-goatcounter="https://gfvdata.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
@@ -21,8 +21,9 @@
 
   <header class="cabecalho cabecalho--compacto">
     <div class="conteiner">
+      <nav class="jogadores" id="jogadores" aria-label="Jogador" hidden></nav>
       <p class="sobrelinha">Chess Tracking · Chess.com</p>
-      <h1>Treino dos meus erros graves</h1>
+      <h1 id="t-titulo">Treino dos erros graves</h1>
       <p class="meta-info" id="meta-treino">Carregando…</p>
       <nav class="abas" aria-label="Seções">
         <a class="aba" href="./">Estatísticas</a>
@@ -67,7 +68,7 @@
         <div class="kpis treino__placar" id="t-placar"></div>
         <details class="dados treino__ajuda">
           <summary>Como funciona</summary>
-          <p>Cada posição é um momento real de uma partida sua, logo antes de um lance que o Stockfish
+          <p>Cada posição é um momento real de uma partida do jogador, logo antes de um lance que o Stockfish
             classificou como <strong>erro grave</strong> (sua chance de vitória caiu 15 pontos ou mais),
             quando você ainda não estava perdido. Encontre o lance que você deveria ter jogado.</p>
           <p>Vale o melhor lance do motor e as alternativas quase tão boas (até 5 pontos de chance de
@@ -81,11 +82,12 @@
 
   <footer class="rodape">
     <div class="conteiner">
-      <p>Posições tiradas das minhas partidas no Chess.com e analisadas com o Stockfish na atualização diária.
+      <p>Posições tiradas das partidas no Chess.com e analisadas com o Stockfish na atualização diária.
         Tabuleiro: <a href="https://github.com/lichess-org/chessground" target="_blank" rel="noopener">chessground</a>.</p>
     </div>
   </footer>
 
+  <script src="js/jogador.js"></script>
   <script src="js/treino.js"></script>
 </body>
 </html>

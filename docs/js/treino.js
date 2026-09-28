@@ -1,13 +1,14 @@
 /* ===== Chess Tracking — treino dos erros graves =====
-   Lê docs/dados/treino.json (gerado pela publicação): posições logo antes de cada
-   erro grave meu, com lances legais, melhor lance e alternativas aceitas.
-   O progresso fica no localStorage deste navegador. */
+   Lê docs/dados/<usuario>/treino.json (gerado pela publicação): posições logo antes
+   de cada erro grave do jogador, com lances legais, melhor lance e alternativas aceitas.
+   O progresso fica no localStorage deste navegador, separado por jogador. */
 (function () {
   "use strict";
 
   const CG_BASE = "https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.4.0";
   const MAX_TENTATIVAS = 3;
-  const CHAVE_PROGRESSO = "treino-progresso-v1";
+  const CHAVE_PROGRESSO_ANTIGA = "treino-progresso-v1";   // de quando só havia o giggsmate
+  let CHAVE_PROGRESSO = CHAVE_PROGRESSO_ANTIGA;
   const NOME_RITMO = { bullet: "Bullet", blitz: "Blitz", rapid: "Rapid", daily: "Daily" };
   const NOME_FASE = { abertura: "Abertura (lances 1–10)", meio: "Meio-jogo (11–25)", final: "Final (26+)" };
   const RITMOS = ["bullet", "blitz", "rapid", "daily"];
@@ -30,9 +31,16 @@
   const sessao = { certas: 0, feitas: 0, sequencia: 0 };
 
   function lerProgresso() {
-    try { return JSON.parse(localStorage.getItem(CHAVE_PROGRESSO) || "{}"); } catch (e) { return {}; }
+    try {
+      let bruto = localStorage.getItem(CHAVE_PROGRESSO);
+      if (bruto == null && Jogador.usuario === "giggsmate") {
+        bruto = localStorage.getItem(CHAVE_PROGRESSO_ANTIGA);
+        if (bruto != null) { localStorage.setItem(CHAVE_PROGRESSO, bruto); localStorage.removeItem(CHAVE_PROGRESSO_ANTIGA); }
+      }
+      return JSON.parse(bruto || "{}");
+    } catch (e) { return {}; }
   }
-  let progresso = lerProgresso();
+  let progresso = {};
   function registrar(id, ok) {
     const r = progresso[id] || { ok: 0, erro: 0 };
     r[ok ? "ok" : "erro"]++;
@@ -97,7 +105,7 @@
       <div class="treino__chance">Antes do lance, sua chance de vitória era <strong>${p.chance_antes}%</strong> (${esc(p.antes)}).</div>
       ${prog ? `<div class="treino__historico">Você já viu esta posição: ${prog.ok} acerto(s), ${prog.erro} erro(s).</div>` : ""}`;
     status("", "");
-    $("t-link-partida").href = `./#partida=${p.uuid}&lance=${p.ply}`;
+    $("t-link-partida").href = `${Jogador.link("./")}#partida=${p.uuid}&lance=${p.ply}`;
     $("t-dica").disabled = false;
     $("t-solucao").disabled = false;
     renderPlacar();
@@ -240,6 +248,11 @@
   // ---------- Início ----------
   async function iniciar() {
     iniciarTema();
+    await Jogador.pronto;
+    CHAVE_PROGRESSO = `treino-progresso-v1:${Jogador.usuario}`;
+    progresso = lerProgresso();
+    $("t-titulo").textContent = `Treino dos erros graves de ${Jogador.nome}`;
+    document.title = `Treino de ${Jogador.nome} — Chess Tracking`;
     // O CSS do chessground precisa estar aplicado antes de criar o tabuleiro: ele mede
     // o tamanho das casas na criação, e medidas erradas fazem o primeiro clique se perder.
     const css = ["chessground.base.css", "chessground.brown.css", "chessground.cburnett.css"].map((f) => new Promise((ok) => {
@@ -248,7 +261,7 @@
     }));
     const [dados, mod] = (await Promise.all([
       ...css,
-      fetch("dados/treino.json", { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(`dados/treino.json: HTTP ${r.status}`); return r.json(); }),
+      fetch(`${Jogador.base}treino.json`, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(`${Jogador.base}treino.json: HTTP ${r.status}`); return r.json(); }),
       import(`${CG_BASE}/dist/chessground.min.js`),
     ])).slice(-2);
     Chessground = mod.Chessground;
@@ -259,7 +272,9 @@
       drawable: { enabled: false, visible: true },
     });
     const conta = (f) => TODAS.filter(f).length;
-    $("meta-treino").textContent = `${TODAS.length} posições das suas partidas em que você cometeu um erro grave. Encontre o lance certo.`;
+    $("meta-treino").textContent = TODAS.length
+      ? `${TODAS.length} posições das partidas de ${Jogador.nome} logo antes de um erro grave. Encontre o lance certo.`
+      : `Ainda não há posições de treino para ${Jogador.nome}: as partidas entram aqui depois de analisadas pelo Stockfish na atualização diária.`;
     montarChips("t-filtro-ritmo", [{ chave: "todos", nome: "Todos", n: TODAS.length },
       ...RITMOS.filter((r) => conta((p) => p.ritmo === r)).map((r) => ({ chave: r, nome: NOME_RITMO[r], ponto: true, n: conta((p) => p.ritmo === r) }))], "ritmo");
     montarChips("t-filtro-fase", [{ chave: "todas", nome: "Todas" }, { chave: "abertura", nome: "Abertura" }, { chave: "meio", nome: "Meio-jogo" }, { chave: "final", nome: "Final" }], "fase");

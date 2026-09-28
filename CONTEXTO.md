@@ -27,8 +27,21 @@ sequência com 0,5 s entre elas, e retry com espera crescente em 429/5xx (respei
 | 4 Tabuleiro | `src/analise/tabuleiro.py` | PGN → lances, posições, saldo de material e fatos para os padrões (sem motor) |
 | 4 Motor | `src/analise/motor.py` | PGN → `dados/analises/<usuario>/AAAA-MM.json` (versionado; Stockfish, opcional) |
 | 4 Comentários | `src/analise/comentarios.py` | análise → classificação, comentário e precisão por lance (na publicação) |
-| 5 Publicação | `src/publicacao/painel.py` | partidas tratadas → `docs/dados/*.json` |
-| 6 Página | `docs/` | lê `docs/dados/` e agrega no navegador |
+| 5 Publicação | `src/publicacao/painel.py` | partidas tratadas → `docs/dados/<usuario>/*.json` + `docs/dados/jogadores.json` |
+| 6 Página | `docs/` | lê `docs/dados/` do jogador escolhido e agrega no navegador |
+
+### Vários jogadores
+
+- `config.json` → `"jogadores": [{"usuario", "fuso_horario"?}]` (fuso omitido = o global).
+  O formato antigo (`"usuario": "…"`) ainda é aceito.
+- `run_pipeline.py` roda coleta e tratamento para cada um; um erro de API num jogador vai
+  para o log e não impede os demais. `--usuario X` (ou `CHESS_USER=a,b`) restringe a execução.
+- Orçamento do Stockfish repartido: cada jogador recebe `tempo restante ÷ jogadores que
+  faltam`, então o que um não usa (histórico já analisado) passa para o seguinte.
+- Conta nova: nenhum mês dela está marcado como completo no disco, então a coleta incremental
+  já baixa o histórico inteiro, sem `--completo`.
+- Partidas entre dois jogadores acompanhados aparecem nos dois, cada uma do ponto de vista
+  do dono da página.
 
 ### Coleta incremental
 
@@ -122,11 +135,17 @@ A página combina esses fatos nos **padrões de vitória e derrota** (`PADROES` 
   perdem no máximo 5 p.p. de chance em relação à melhor. Sem `alt` ainda, só o melhor lance vale.
 - Página: `treino.html` + `js/treino.js`. O tabuleiro só permite lances legais (lista gerada
   pelo python-chess), 3 tentativas, dica (peça a mexer), solução com a linha do motor e o que
-  foi jogado na partida. Progresso no `localStorage` (chave `treino-progresso-v1`); acerto só
+  foi jogado na partida. Progresso no `localStorage` (chave `treino-progresso-v1:<usuario>`;
+  a chave antiga, sem usuário, é migrada para giggsmate na primeira visita); acerto só
   conta de primeira e sem dica — o resto volta em "Revisar erradas". Link direto:
   `treino.html#<uuid>:<ply>`.
 
 ## Publicação: `docs/dados/`
+
+Na raiz, `jogadores.json` (índice para o seletor: usuário, nome com a grafia da URL do perfil,
+avatar, total de partidas, analisadas, última partida e rating atual por ritmo) e `gerado.json`.
+O resto fica em `docs/dados/<usuario>/`. Pastas de contas que saíram do `config.json` são
+removidas na publicação.
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -134,7 +153,7 @@ A página combina esses fatos nos **padrões de vitória e derrota** (`PADROES` 
 | `jogos/AAAA-MM.json` | por partida (`uuid`): `fi` posição inicial, `san`/`uci`/`fen` por meio-lance, `clk` relógio, `sal` saldo de material; se analisada, `av`, `mu` (melhor lance), `cl` (classe), `cm` (comentário), `mel` (melhor em SAN), `res` (resumo). Carregado sob demanda pelo visualizador |
 | `treino.json` | posições de treino: FEN, lances legais (`dests`), lance jogado, melhor, aceitos, linha do motor, chance antes/depois e contexto da partida |
 | `perfil.json` | perfil, stats por ritmo, usuário e fuso |
-| `gerado.json` | carimbo da última geração **com mudança** (evita commit diário vazio) |
+| `gerado.json` (raiz) | carimbo da última geração **com mudança** em qualquer jogador (evita commit diário vazio) |
 
 Métricas de tempo (por partida ao vivo): segundos gastos em média por lance meu em cada fase
 (lances 1–10, 11–25, 26+; gasto = relógio anterior − atual + incremento), fração do tempo-base
@@ -145,7 +164,9 @@ restante no fim (meu e do adversário) e `apuro` = ficou com < 10% do tempo-base
 `docs/index.html` + `js/app.js` (estatísticas, padrões, explorador) + `js/visualizador.js`
 (partida lance a lance, com o tabuleiro [chessground](https://github.com/lichess-org/chessground)
 10.4.0 via jsDelivr) + `css/estilo.css`, Chart.js 4.4.3 via jsDelivr, GoatCounter.
-Link direto para uma partida: `#partida=<uuid>&lance=<n>`.
+Jogador na URL: `?j=<usuario>` (sem ele, ou com uma conta que não existe, abre o primeiro do
+`jogadores.json`); `js/jogador.js` monta o seletor e mantém o `?j=` nas abas.
+Link direto para uma partida: `?j=<usuario>#partida=<uuid>&lance=<n>`.
 Filtros (ritmo e período) valem para a página inteira; toda agregação é feita no navegador.
 Cores de série validadas para daltonismo e contraste nos modos claro e escuro; todo gráfico
 tem um "Ver dados" com a tabela equivalente.

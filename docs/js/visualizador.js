@@ -2,7 +2,7 @@
    Abre uma partida num <dialog>: tabuleiro (chessground, do Lichess), relógios,
    saldo de material, lista de lances com a classificação do motor, comentário do
    lance atual, resumo de erros/precisão e gráfico da partida (clique para pular).
-   Os dados vêm de docs/dados/jogos/AAAA-MM.json, carregado só quando preciso. */
+   Os dados vêm de docs/dados/<usuario>/jogos/AAAA-MM.json, carregado só quando preciso. */
 (function () {
   "use strict";
 
@@ -55,8 +55,9 @@
 
   async function carregarMes(mes) {
     if (!cacheMeses.has(mes)) {
-      cacheMeses.set(mes, fetch(`dados/jogos/${mes}.json`, { cache: "no-cache" }).then((r) => {
-        if (!r.ok) throw new Error(`dados/jogos/${mes}.json: HTTP ${r.status}`);
+      const url = `${window.Jogador.base}jogos/${mes}.json`;
+      cacheMeses.set(mes, fetch(url, { cache: "no-cache" }).then((r) => {
+        if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
         return r.json();
       }));
     }

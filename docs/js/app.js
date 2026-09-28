@@ -1,5 +1,6 @@
 /* ===== Chess Tracking — painel =====
-   Lê docs/dados/{partidas,perfil,gerado}.json (gerados por run_pipeline.py),
+   Lê docs/dados/<usuario>/{partidas,perfil}.json e docs/dados/gerado.json (gerados
+   por run_pipeline.py; o jogador vem de js/jogador.js),
    aplica os filtros de ritmo e período e agrega tudo no navegador. */
 (function () {
   "use strict";
@@ -184,8 +185,8 @@
   // ---------- Carregamento ----------
   async function carregar() {
     const [tab, perfil, gerado] = await Promise.all(
-      ["partidas", "perfil", "gerado"].map((n) => fetch(`dados/${n}.json`, { cache: "no-cache" }).then((r) => {
-        if (!r.ok) throw new Error(`dados/${n}.json: HTTP ${r.status}`);
+      [`${Jogador.base}partidas`, `${Jogador.base}perfil`, "dados/gerado"].map((n) => fetch(`${n}.json`, { cache: "no-cache" }).then((r) => {
+        if (!r.ok) throw new Error(`${n}.json: HTTP ${r.status}`);
         return r.json();
       })));
     const cols = tab.colunas;
@@ -201,7 +202,7 @@
   // ---------- Cabeçalho ----------
   function renderCabecalho() {
     const pf = PERFIL.perfil || {};
-    const nome = pf.username || PERFIL.usuario;
+    const nome = Jogador.nome || pf.username || PERFIL.usuario;
     const link = $("nome-usuario");
     link.textContent = nome;
     link.href = pf.url || `https://www.chess.com/member/${PERFIL.usuario}`;
@@ -892,8 +893,8 @@
   iniciarTema();
   iniciarDica();
   if (window.Visualizador) window.Visualizador.iniciar();
-  carregar().then(() => {
-    window.ChessApp = { usuario: (PERFIL.perfil && PERFIL.perfil.username) || PERFIL.usuario, MOTIVOS, NOME_RITMO, fmtControle, fmtData };
+  Jogador.pronto.then(carregar).then(() => {
+    window.ChessApp = { usuario: Jogador.nome, MOTIVOS, NOME_RITMO, fmtControle, fmtData };
     renderCabecalho();
     iniciarFiltros();
     renderizar();

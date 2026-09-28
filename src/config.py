@@ -1,7 +1,9 @@
-"""Configuração central: usuário acompanhado, caminhos e logging.
+"""Configuração central: jogadores acompanhados, caminhos e logging.
 
-O usuário vem de `config.json` na raiz; a variável de ambiente CHESS_USER
-sobrescreve (útil para rodar para outra conta sem editar o arquivo).
+Os jogadores vêm de `config.json` na raiz (`jogadores`: lista de
+`{"usuario", "fuso_horario"?}`; o fuso de cada um cai no `fuso_horario` global
+se omitido). A variável de ambiente CHESS_USER (uma ou mais contas separadas
+por vírgula) restringe a execução a essas contas.
 """
 import json
 import logging
@@ -20,12 +22,22 @@ API_BASE = "https://api.chess.com/pub"
 
 def carregar() -> dict:
     cfg = json.loads(ARQUIVO_CONFIG.read_text(encoding="utf-8"))
-    usuario = os.environ.get("CHESS_USER") or cfg.get("usuario")
-    if not usuario:
-        raise SystemExit("Defina 'usuario' em config.json ou a variável CHESS_USER.")
-    cfg["usuario"] = usuario.strip().lower()
     cfg.setdefault("fuso_horario", "UTC")
     cfg.setdefault("user_agent", "ChessTracking/1.0")
+    # Formato antigo: "usuario": "conta"
+    brutos = cfg.get("jogadores") or ([{"usuario": cfg["usuario"]}] if cfg.get("usuario") else [])
+    jogadores = []
+    for j in brutos:
+        j = {"usuario": j} if isinstance(j, str) else dict(j)
+        j["usuario"] = j["usuario"].strip().lower()
+        j.setdefault("fuso_horario", cfg["fuso_horario"])
+        jogadores.append(j)
+    cfg["jogadores"] = jogadores
+    so = os.environ.get("CHESS_USER")
+    if so:
+        cfg["selecionados"] = [u.strip().lower() for u in so.split(",") if u.strip()]
+    if not jogadores and not cfg.get("selecionados"):
+        raise SystemExit("Defina 'jogadores' em config.json ou a variável CHESS_USER.")
     return cfg
 
 

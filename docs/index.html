@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chess Tracking — gfvdata-web</title>
-  <meta name="description" content="Histórico e estatísticas de partidas no Chess.com, atualizado diariamente." />
+  <meta name="description" content="Histórico e estatísticas de partidas no Chess.com de um grupo de jogadores, atualizado diariamente." />
   <link rel="stylesheet" href="css/estilo.css" />
   <script>try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
   <script data-goatcounter="https://gfvdata.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
@@ -21,6 +21,7 @@
 
   <header class="cabecalho">
     <div class="conteiner">
+      <nav class="jogadores" id="jogadores" aria-label="Jogador" hidden></nav>
       <div class="cabecalho__linha">
         <img class="avatar" id="avatar" alt="" hidden />
         <div>
@@ -248,6 +249,7 @@
   <div class="dica" id="dica" role="tooltip"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="js/jogador.js"></script>
   <script src="js/visualizador.js"></script>
   <script src="js/app.js"></script>
 </body>

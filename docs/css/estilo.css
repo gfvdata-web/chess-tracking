@@ -379,6 +379,25 @@ tr.linha-partida:focus-visible { outline: 2px solid var(--acento); outline-offse
 .aba:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .cabecalho--compacto { padding: 32px 0 22px; }
 
+/* ---------- Seletor de jogador ---------- */
+.jogadores { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.jogadores[hidden] { display: none; }
+.jogador {
+  display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  color: #fff; text-decoration: none; font-size: .85rem; font-weight: 600;
+  padding: 3px 12px 3px 3px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .08);
+}
+.jogador span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jogador img, .jogador__ini {
+  width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: none;
+  background: rgba(255, 255, 255, .2); display: inline-flex; align-items: center; justify-content: center; font-size: .8rem;
+}
+.jogador:hover { background: rgba(255, 255, 255, .18); }
+.jogador[aria-current="true"] { background: #fff; color: #1e40af; border-color: #fff; }
+.jogador[aria-current="true"] .jogador__ini { background: #dbe4ff; }
+.jogador:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
 /* ---------- Treino ---------- */
 .treino { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .treino__tabuleiro { min-width: 0; max-width: 560px; width: 100%; justify-self: center; }

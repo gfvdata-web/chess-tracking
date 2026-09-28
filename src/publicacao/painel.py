@@ -1,6 +1,6 @@
 """Etapa 5 — publicação: partidas tratadas -> JSON que a página lê.
 
-Gera em docs/dados/:
+Gera em docs/dados/<usuario>/:
 - partidas.json      tabela colunar (sem PGN), uma linha por partida, com métricas
                      de gestão de tempo, fatos de tabuleiro (padrões) e o resumo
                      da análise por motor quando existir;
@@ -8,10 +8,15 @@ Gera em docs/dados/:
                      foi analisada — avaliação, classificação e comentário de cada
                      lance. A página carrega o mês só quando uma partida é aberta;
 - perfil.json        perfil, ratings atuais/recordes e metadados;
+- treino.json        posições dos erros graves (ver src/publicacao/treino.py).
+
+E, uma vez por execução, em docs/dados/:
+- jogadores.json     índice dos jogadores (nome, avatar, ratings, totais) para o seletor;
 - gerado.json        carimbo da última geração com mudança.
 """
 import json
 import logging
+import shutil
 from datetime import datetime, timezone
 from statistics import mean
 
@@ -135,7 +140,13 @@ def _gravar_se_mudou(arq, dados) -> bool:
     return True
 
 
-def publicar(usuario: str, cfg: dict) -> None:
+def dir_publicacao(usuario: str):
+    return config.DIR_DOCS_DADOS / usuario
+
+
+def publicar(usuario: str, fuso_horario: str) -> bool:
+    """Publica um jogador em docs/dados/<usuario>/. Retorna se algum arquivo mudou."""
+    destino = dir_publicacao(usuario)
     meses = {}
     for arq in sorted(config.dir_partidas(usuario).glob("*.json")):
         meses[arq.stem] = sorted(json.loads(arq.read_text(encoding="utf-8")).get("partidas", []),
@@ -143,7 +154,7 @@ def publicar(usuario: str, cfg: dict) -> None:
     total = sum(len(ps) for ps in meses.values())
     if not total:
         log.warning("Nenhuma partida tratada para %s; nada a publicar.", usuario)
-        return
+        return False
     analises = motor.carregar_analises(usuario)
 
     linhas, mudou_jogos, n_analisadas, sem_tabuleiro = [], 0, 0, 0
@@ -172,32 +183,66 @@ def publicar(usuario: str, cfg: dict) -> None:
                     posicoes_treino.extend(treino.extrair(p, mes, rep, com, an))
                 except Exception:
                     log.exception("Falha ao extrair posições de treino de %s", p["url"])
-        mudou_jogos += _gravar_se_mudou(config.DIR_DOCS_DADOS / "jogos" / f"{mes}.json", jogos_mes)
+        mudou_jogos += _gravar_se_mudou(destino / "jogos" / f"{mes}.json", jogos_mes)
 
     linhas.sort(key=lambda l: l[COLUNAS.index("fim")])
     posicoes_treino.sort(key=lambda x: (x["data"], x["ply"]), reverse=True)
-    mudou_jogos += _gravar_se_mudou(config.DIR_DOCS_DADOS / "treino.json", {"posicoes": posicoes_treino})
+    mudou_jogos += _gravar_se_mudou(destino / "treino.json", {"posicoes": posicoes_treino})
     log.info("Treino: %d posições de erro grave (%d com alternativas do motor)",
              len(posicoes_treino), sum(1 for x in posicoes_treino if len(x["aceitos"]) > 1 or analises.get(x["uuid"], {}).get("alt_v")))
-    mudou_partidas = _gravar_se_mudou(config.DIR_DOCS_DADOS / "partidas.json", {"colunas": COLUNAS, "linhas": linhas})
+    mudou_partidas = _gravar_se_mudou(destino / "partidas.json", {"colunas": COLUNAS, "linhas": linhas})
 
     arq_perfil = config.RAIZ / "dados" / "perfil" / f"{usuario}.json"
     perfil = json.loads(arq_perfil.read_text(encoding="utf-8")) if arq_perfil.exists() else {}
     meta = {
         "usuario": usuario,
-        "fuso_horario": cfg["fuso_horario"],
+        "fuso_horario": fuso_horario,
         "total_partidas": total,
         "analisadas_motor": n_analisadas,
         "ultima_partida": linhas[-1][COLUNAS.index("fim")],
         **perfil,
     }
-    mudou_meta = _gravar_se_mudou(config.DIR_DOCS_DADOS / "perfil.json", meta)
-    mudou = mudou_partidas or mudou_meta or mudou_jogos
-    # Carimbo separado: só avança quando os dados mudam, para o workflow não commitar à toa.
-    if mudou or not (config.DIR_DOCS_DADOS / "gerado.json").exists():
-        agora = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
-        _gravar_se_mudou(config.DIR_DOCS_DADOS / "gerado.json", {"gerado_em": agora})
+    mudou_meta = _gravar_se_mudou(destino / "perfil.json", meta)
+    mudou = bool(mudou_partidas or mudou_meta or mudou_jogos)
     if sem_tabuleiro:
         log.warning("%d partidas sem PGN legível (fora do visualizador)", sem_tabuleiro)
-    log.info("Publicação: %d partidas (%d com análise do motor) em docs/dados/ (%s)",
-             total, n_analisadas, "atualizado" if mudou else "sem mudanças")
+    log.info("Publicação de %s: %d partidas (%d com análise do motor) (%s)",
+             usuario, total, n_analisadas, "atualizado" if mudou else "sem mudanças")
+    return mudou
+
+
+# Arquivos da estrutura antiga (um jogador só, direto em docs/dados/)
+LEGADO = ("partidas.json", "perfil.json", "treino.json", "jogos")
+
+
+def publicar_indice(usuarios: list[str], mudou: bool) -> None:
+    """docs/dados/jogadores.json + gerado.json; remove pastas de quem saiu do config."""
+    raiz = config.DIR_DOCS_DADOS
+    jogadores = []
+    for u in usuarios:
+        arq = dir_publicacao(u) / "perfil.json"
+        if not arq.exists():
+            continue
+        meta = json.loads(arq.read_text(encoding="utf-8"))
+        pf, st = meta.get("perfil") or {}, meta.get("stats") or {}
+        jogadores.append({
+            # A URL do perfil guarda a grafia escolhida pelo jogador; `username` vem em minúsculas
+            "usuario": u, "nome": (pf.get("url") or "").rstrip("/").rsplit("/", 1)[-1] or pf.get("username") or u,
+            "avatar": pf.get("avatar"),
+            "total_partidas": meta.get("total_partidas"), "analisadas_motor": meta.get("analisadas_motor"),
+            "ultima_partida": meta.get("ultima_partida"),
+            "ratings": {r: st[f"chess_{r}"]["last"]["rating"] for r in ("bullet", "blitz", "rapid", "daily")
+                        if (st.get(f"chess_{r}") or {}).get("last")},
+        })
+    mudou |= _gravar_se_mudou(raiz / "jogadores.json", {"jogadores": jogadores})
+
+    ativos = set(usuarios)
+    for item in raiz.iterdir():
+        if (item.is_dir() and item.name not in ativos) or item.name in LEGADO:
+            log.info("Removendo publicação antiga: %s", item.relative_to(config.RAIZ))
+            shutil.rmtree(item) if item.is_dir() else item.unlink()
+            mudou = True
+    # Carimbo separado: só avança quando os dados mudam, para o workflow não commitar à toa.
+    if mudou or not (raiz / "gerado.json").exists():
+        agora = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+        _gravar_se_mudou(raiz / "gerado.json", {"gerado_em": agora})

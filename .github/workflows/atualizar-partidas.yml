@@ -1,6 +1,7 @@
 name: Atualizar partidas
 
-# Coleta diária das partidas no Chess.com (API pública, sem autenticação),
+# Coleta diária das partidas no Chess.com (API pública, sem autenticação) de
+# cada jogador de config.json,
 # retrata o mês corrente, analisa com Stockfish as partidas ainda não
 # analisadas (mais novas primeiro, com orçamento de tempo — o que faltar fica
 # para a próxima execução), regenera docs/dados/ e commita só se algo mudou.
@@ -19,9 +20,13 @@ on:
         type: boolean
         default: false
       orcamento:
-        description: 'Minutos de análise com Stockfish'
+        description: 'Minutos de análise com Stockfish (repartidos entre os jogadores)'
         type: number
         default: 45
+      usuario:
+        description: 'Só esta conta do Chess.com (vazio = todos do config.json)'
+        type: string
+        default: ''
 
 permissions:
   contents: write
@@ -54,6 +59,7 @@ jobs:
         run: |
           ARGS="--analisar --orcamento-min ${{ inputs.orcamento || 45 }}"
           if [ "${{ inputs.completo }}" = "true" ]; then ARGS="$ARGS --completo"; fi
+          if [ -n "${{ inputs.usuario }}" ]; then ARGS="$ARGS --usuario ${{ inputs.usuario }}"; fi
           python run_pipeline.py $ARGS
 
       - name: Commitar se algo mudou
