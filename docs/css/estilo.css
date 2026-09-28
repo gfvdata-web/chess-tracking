@@ -252,6 +252,7 @@ details.dados table { margin-top: 6px; }
 .cel[data-n="4"] { background: var(--heat-4); }
 .cel[data-n="5"] { background: var(--heat-5); }
 .cel--fora { background: transparent; }
+.cel--antes { opacity: .3; }
 .cel:not(.cel--fora):hover { outline: 2px solid var(--texto); outline-offset: 1px; }
 .heatmap-legenda { display: flex; gap: 3px; align-items: center; font-size: .75rem; color: var(--texto-suave); margin-top: 8px; }
 

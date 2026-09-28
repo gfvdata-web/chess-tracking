@@ -98,6 +98,54 @@
   const fmtData = (iso) => iso.split("-").reverse().join("/");
   const fmtMes = (ms) => new Date(ms).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }).replace(". de ", "/").replace(" de ", "/");
 
+  // ---------- Eixo de tempo ----------
+  // O eixo x dos gráficos temporais segue o período filtrado e escolhe a unidade das
+  // marcas (ano, mês, semana ou dia) pelo tamanho do intervalo — sem rótulos repetidos.
+  const DIA_MS = 864e5;
+  function faixaTempo(ps) {
+    const ini = estado.de ? Date.parse(estado.de + "T00:00:00") : (ps.length ? ps[0].ts : Date.now());
+    const fim = estado.ate ? Date.parse(estado.ate + "T23:59:59") : (ps.length ? ps[ps.length - 1].ts : Date.now());
+    return fim - ini < DIA_MS ? [ini - DIA_MS / 2, fim + DIA_MS / 2] : [ini, fim];
+  }
+  function unidadeTempo(min, max) {
+    const span = max - min;
+    return span > 3 * 365 * DIA_MS ? "ano" : span > 150 * DIA_MS ? "mes" : span > 45 * DIA_MS ? "semana" : "dia";
+  }
+  function inicioBalde(ts, un) {   // início do dia / semana (segunda) / mês / ano que contém ts
+    const d = new Date(ts); d.setHours(0, 0, 0, 0);
+    if (un === "semana") d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    if (un === "mes" || un === "ano") d.setDate(1);
+    if (un === "ano") d.setMonth(0);
+    return d.getTime();
+  }
+  function proximoBalde(ts, un) {
+    const d = new Date(ts);
+    if (un === "dia") d.setDate(d.getDate() + 1);
+    else if (un === "semana") d.setDate(d.getDate() + 7);
+    else if (un === "mes") d.setMonth(d.getMonth() + 1);
+    else d.setFullYear(d.getFullYear() + 1);
+    return d.getTime();
+  }
+  function fmtTempo(ms, un) {
+    const d = new Date(ms);
+    if (un === "ano") return String(d.getFullYear());
+    if (un === "mes") return fmtMes(ms);
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  }
+  function eixoTempo(min, max, extra = {}) {
+    const un = unidadeTempo(min, max);
+    const marcas = [];
+    for (let t = inicioBalde(min, un); t <= max; t = proximoBalde(t, un)) if (t >= min) marcas.push(t);
+    const passo = Math.ceil(marcas.length / 7) || 1;
+    const visiveis = marcas.filter((_, i) => i % passo === 0);
+    return {
+      type: "linear", min, max, grid: { display: false },
+      afterBuildTicks: (ax) => { ax.ticks = visiveis.map((value) => ({ value })); },
+      ticks: { callback: (v) => fmtTempo(v, un), maxRotation: 0, autoSkip: false },
+      ...extra,
+    };
+  }
+
   function contar(lista) {
     const c = { vitoria: 0, empate: 0, derrota: 0, n: lista.length };
     for (const p of lista) c[p.resultado]++;
@@ -349,7 +397,7 @@
         parsing: false, normalized: true,
         interaction: { mode: "nearest", axis: "x", intersect: false },
         scales: {
-          x: { type: "linear", grid: { display: false }, ticks: { callback: (v) => fmtMes(v), maxTicksLimit: 8, maxRotation: 0 } },
+          x: eixoTempo(...faixaTempo(ps)),
           y: { grid: { color: css("--borda") }, border: { display: false }, ticks: { maxTicksLimit: 6 } },
         },
         plugins: {
@@ -502,7 +550,8 @@
         else {
           const c = contar(lista);
           const txt = `${fmtData(dia)} — ${lista.length ? `${c.n} partida${c.n > 1 ? "s" : ""} (${c.vitoria}V ${c.empate}E ${c.derrota}D)` : "nenhuma partida"}`;
-          partes.push(`<span class="cel" data-n="${nivelHeat(lista.length)}" data-dica="${txt}" style="grid-column:${semana + 2};grid-row:${d + 2}"></span>`);
+          const fora = estado.de && dia < estado.de;
+          partes.push(`<span class="cel${fora ? " cel--antes" : ""}" data-n="${nivelHeat(lista.length)}" data-dica="${txt}${fora ? " (fora do período)" : ""}" style="grid-column:${semana + 2};grid-row:${d + 2}"></span>`);
         }
         dia = somaDias(dia, 1);
       }
@@ -570,31 +619,34 @@
   function renderMultiplos(ps) {
     const ritmos = RITMOS.filter((r) => (estado.ritmo === "todos" || r === estado.ritmo) && ps.some((p) => p.ritmo === r));
     Object.keys(graficos).filter((k) => k.startsWith("g-mult")).forEach((k) => { graficos[k].destroy(); delete graficos[k]; });
+    // Mesmo eixo x para todos os ritmos (o período filtrado); barras agrupadas na unidade do eixo
+    const [xMin, xMax] = faixaTempo(ps);
+    const eixoUn = unidadeTempo(xMin, xMax);
+    const baldeUn = eixoUn === "ano" ? "mes" : eixoUn;
+    const NOME_BALDE = { dia: "dia", semana: "semana", mes: "mês" };
     $("multiplos").innerHTML = ritmos.length ? ritmos.map((r) => `<div class="card">
         <div class="multiplo__topo"><h3><span class="ponto" style="background:var(--${r})"></span>${NOME_RITMO[r]}</h3><span class="multiplo__stats" id="mult-stats-${r}"></span></div>
         <div class="area-grafico area-grafico--media"><canvas id="g-mult-${r}"></canvas></div>
-        <p class="multiplo__rotulo">Partidas por mês</p>
+        <p class="multiplo__rotulo">Partidas por ${NOME_BALDE[baldeUn]}</p>
         <div class="area-grafico area-grafico--mini"><canvas id="g-mult-mes-${r}"></canvas></div>
-        <details class="dados" id="t-mult-${r}"><summary>Ver dados por mês</summary></details>
+        <details class="dados" id="t-mult-${r}"><summary>Ver dados por ${NOME_BALDE[baldeUn]}</summary></details>
       </div>`).join("") : `<p class="vazio">Sem partidas no filtro atual.</p>`;
 
-    const mesTs = (m) => Date.parse(m + "-01T12:00:00");
     for (const r of ritmos) {
       const doRitmo = ps.filter((p) => p.ritmo === r);
       const rat = doRitmo.filter((p) => p.ranqueada && p.variante === "chess" && p.meu_rating);
       const pts = rat.map((p) => ({ x: p.ts, y: p.meu_rating, p }));
       const comQuebras = pts.flatMap((pt, i) => (i && pt.x - pts[i - 1].x > PAUSA_LONGA_MS ? [{ x: pt.x - 1, y: null }, pt] : [pt]));
-      const porMes = new Map();
-      doRitmo.forEach((p) => { const m = p.data.slice(0, 7); if (!porMes.has(m)) porMes.set(m, []); porMes.get(m).push(p); });
-      const meses = [...porMes.keys()].sort();
-      const xMin = Math.min(mesTs(meses[0]), pts.length ? pts[0].x : Infinity) - 15 * 864e5;
-      const xMax = Math.max(mesTs(meses[meses.length - 1]) + 30 * 864e5, pts.length ? pts[pts.length - 1].x : 0);
+      const porBalde = new Map();
+      doRitmo.forEach((p) => { const b = inicioBalde(p.ts, baldeUn); if (!porBalde.has(b)) porBalde.set(b, []); porBalde.get(b).push(p); });
+      const baldes = [...porBalde.keys()].sort((a, b) => a - b);
+      const rotBalde = (b) => (baldeUn === "mes" ? fmtMes(b) : baldeUn === "semana" ? `semana de ${new Date(b).toLocaleDateString("pt-BR")}` : new Date(b).toLocaleDateString("pt-BR"));
       const cor = css(`--${r}`);
       if (rat.length) {
         const ys = rat.map((p) => p.meu_rating);
         $(`mult-stats-${r}`).textContent = `atual ${ys[ys.length - 1]} · pico ${Math.max(...ys)} · mín. ${Math.min(...ys)} · ${fmtInt.format(doRitmo.length)} partidas`;
       } else $(`mult-stats-${r}`).textContent = `${fmtInt.format(doRitmo.length)} partidas (sem rating)`;
-      const eixoX = (mostrar) => ({ type: "linear", min: xMin, max: xMax, grid: { display: false }, display: mostrar, ticks: { callback: (v) => fmtMes(v), maxTicksLimit: 6, maxRotation: 0 } });
+      const eixoX = (mostrar) => eixoTempo(xMin, xMax, { display: mostrar });
       desenhar(`g-mult-${r}`, {
         type: "line",
         data: { datasets: [{ label: `Rating ${NOME_RITMO[r]}`, data: comQuebras, borderColor: cor, backgroundColor: cor, borderWidth: 2, tension: 0.15, spanGaps: false,
@@ -608,21 +660,25 @@
             label: (it) => { const p = it.raw.p; return p ? ` ${p.meu_rating} — ${p.resultado === "vitoria" ? "venceu" : p.resultado === "derrota" ? "perdeu" : "empatou"} vs ${p.adversario} (${p.adv_rating})` : ""; } } } },
         },
       });
-      const cs = meses.map((m) => contar(porMes.get(m)));
+      const cs = baldes.map((b) => contar(porBalde.get(b)));
+      // Barra centrada no balde, com largura proporcional ao tamanho dele no eixo
+      const largura = $(`g-mult-mes-${r}`).parentElement.clientWidth || 400;
+      const baldeMs = { dia: DIA_MS, semana: 7 * DIA_MS, mes: 30.4 * DIA_MS }[baldeUn];
+      const espessura = Math.max(2, Math.min(40, Math.floor(((largura - 50) * baldeMs) / (xMax - xMin) * 0.8)));
       desenhar(`g-mult-mes-${r}`, {
         type: "bar",
-        data: { datasets: RESULTADOS.map((res) => ({ label: res.nome, data: meses.map((m, i) => ({ x: mesTs(m), y: cs[i][res.chave] })), backgroundColor: css(res.cor), barThickness: "flex", maxBarThickness: 14, borderRadius: 0 })) },
+        data: { datasets: RESULTADOS.map((res) => ({ label: res.nome, data: baldes.map((b, i) => ({ x: (b + proximoBalde(b, baldeUn)) / 2, y: cs[i][res.chave] })), backgroundColor: css(res.cor), barThickness: espessura, borderRadius: 0 })) },
         options: {
           parsing: false, interaction: { mode: "nearest", axis: "x", intersect: false },
           scales: { x: { ...eixoX(true), stacked: true, offset: false }, y: { stacked: true, grid: { color: css("--borda") }, border: { display: false }, ticks: { maxTicksLimit: 3, precision: 0 } } },
           plugins: { legend: { display: false }, tooltip: { callbacks: {
-            title: (it) => { const i = it[0].dataIndex; return `${fmtMes(mesTs(meses[i]))} — ${cs[i].n} partidas`; },
+            title: (it) => { const i = it[0].dataIndex; return `${rotBalde(baldes[i])} — ${cs[i].n} partidas`; },
             label: (it) => ` ${it.dataset.label}: ${it.raw.y}` } } },
         },
       });
-      tabelaDados(`t-mult-${r}`, ["Mês", "Partidas", "Vitórias", "Empates", "Derrotas", "Rating no fim"], meses.map((m, i) => {
-        const doMes = rat.filter((p) => p.data.startsWith(m));
-        return [m.split("-").reverse().join("/"), cs[i].n, cs[i].vitoria, cs[i].empate, cs[i].derrota, doMes.length ? doMes[doMes.length - 1].meu_rating : "—"];
+      tabelaDados(`t-mult-${r}`, [NOME_BALDE[baldeUn][0].toUpperCase() + NOME_BALDE[baldeUn].slice(1), "Partidas", "Vitórias", "Empates", "Derrotas", "Rating no fim"], baldes.map((b, i) => {
+        const doBalde = porBalde.get(b).filter((p) => p.ranqueada && p.variante === "chess" && p.meu_rating);
+        return [rotBalde(b), cs[i].n, cs[i].vitoria, cs[i].empate, cs[i].derrota, doBalde.length ? doBalde[doBalde.length - 1].meu_rating : "—"];
       }));
     }
   }
