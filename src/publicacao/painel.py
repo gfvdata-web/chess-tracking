@@ -120,7 +120,7 @@ def jogo_visualizador(p: dict, rep: dict, com: dict | None) -> dict:
         "clk": p.get("relogios") or [], "sal": rep["saldo"],
     }
     if com:
-        j.update({"av": com["av"], "cl": com["classes"], "cm": com["comentarios"],
+        j.update({"av": com["av"], "mu": com["mv"], "cl": com["classes"], "cm": com["comentarios"],
                   "mel": com["melhores"], "res": com["resumo"]})
     return j
 
@@ -158,7 +158,7 @@ def publicar(usuario: str, cfg: dict) -> None:
                 try:
                     com = comentarios.comentar(rep["fen_inicial_completa"], rep["uci"], an,
                                                p["cor"] == "brancas", rep["chess960"])
-                    com["av"] = an["av"]
+                    com["av"], com["mv"] = an["av"], an["mv"]
                     n_analisadas += 1
                 except Exception:
                     log.exception("Falha ao comentar %s", p["url"])

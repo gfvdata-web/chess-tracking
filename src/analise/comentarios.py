@@ -64,12 +64,46 @@ def _perda_na_linha(board: chess.Board, ucis: list[str], cor: bool) -> int:
     return max(0, inicio - (material(b, cor) - material(b, not cor)))
 
 
+def precisao_lichess(av: list[int], primeiro_branco: bool = True) -> dict[bool, float | None]:
+    """Precisão por cor como no Lichess: média (ponderada pela volatilidade da
+    posição) e média harmônica da precisão de cada lance, tiradas as duas pela média.
+    Retorna {True: brancas, False: pretas}."""
+    wp = [chance(v) for v in av]
+    if len(wp) < 2:
+        return {True: None, False: None}
+    janela = max(2, min(8, len(wp) // 10))
+    janelas = [wp[:janela]] * (min(janela, len(wp)) - 2) + [wp[i:i + janela] for i in range(len(wp) - janela + 1)]
+
+    def desvio(xs):
+        m = sum(xs) / len(xs)
+        return math.sqrt(sum((x - m) ** 2 for x in xs) / len(xs))
+
+    pesos = [max(0.5, min(12.0, desvio(j))) for j in janelas]
+    por_cor = {True: [], False: []}
+    for i in range(len(wp) - 1):
+        brancas = (i % 2 == 0) == primeiro_branco
+        antes, depois = (wp[i], wp[i + 1]) if brancas else (100 - wp[i], 100 - wp[i + 1])
+        if depois >= antes:
+            acc = 100.0
+        else:
+            acc = max(0.0, min(100.0, 103.1668100711649 * math.exp(-0.04354415386753951 * (antes - depois)) - 3.166924740191411 + 1))
+        por_cor[brancas].append((acc, pesos[i] if i < len(pesos) else pesos[-1]))
+
+    def combinar(itens):
+        if not itens:
+            return None
+        ponderada = sum(a * w for a, w in itens) / sum(w for _, w in itens)
+        harmonica = len(itens) / sum(1 / max(a, 0.001) for a, _ in itens)
+        return round((ponderada + harmonica) / 2, 1)
+
+    return {True: combinar(por_cor[True]), False: combinar(por_cor[False])}
+
+
 def comentar(fen_inicial_completa: str, ucis: list[str], analise: dict, eu_brancas: bool, chess960: bool = False) -> dict:
     """Retorna {classes, comentarios, melhores (SAN), resumo}."""
     av, mv, pv = analise["av"], analise["mv"], analise["pv"]
     board = chess.Board(fen_inicial_completa, chess960=chess960)
     classes, comentarios, melhores = [], [], []
-    quedas = {True: [], False: []}          # por cor (True = brancas)
     contagem = {c: {"imprecisao": 0, "erro": 0, "erro_grave": 0} for c in (True, False)}
     primeiro_grave = {True: None, False: None}
     maior_queda = {True: (0, None), False: (0, None)}
@@ -81,7 +115,6 @@ def comentar(fen_inicial_completa: str, ucis: list[str], analise: dict, eu_branc
         cv_antes = chance(antes) if cor == chess.WHITE else 100 - chance(antes)
         cv_depois = chance(depois) if cor == chess.WHITE else 100 - chance(depois)
         queda = max(0.0, cv_antes - cv_depois)
-        quedas[cor].append(queda)
 
         mov = chess.Move.from_uci(u)
         melhor_uci = mv[i]
@@ -128,8 +161,8 @@ def comentar(fen_inicial_completa: str, ucis: list[str], analise: dict, eu_branc
                 linha_adv = pv[i + 1].split() if pv[i + 1] else []
                 perda = _perda_na_linha(board, linha_adv, cor)
                 if perda >= 2 and linha_adv:
-                    resposta = _san_linha(board, linha_adv, 2)
-                    motivo = f"Perde material: o adversário responde {' '.join(resposta)}." if resposta else "Perde material."
+                    resposta = _san_linha(board, linha_adv, 1)
+                    motivo = f"Perde material depois de {resposta[0]}." if resposta else "Perde material."
                 elif melhor_uci and board_antes.is_capture(chess.Move.from_uci(melhor_uci)) and not board_antes.is_capture(mov):
                     alvo = board_antes.piece_at(chess.Move.from_uci(melhor_uci).to_square)
                     if alvo and VALOR[alvo.piece_type] >= 3:
@@ -137,17 +170,11 @@ def comentar(fen_inicial_completa: str, ucis: list[str], analise: dict, eu_branc
             texto.append(f"{ROTULO[classe]}. {motivo}".strip())
             if melhor_san and u != melhor_uci:
                 texto.append(f"Melhor era {melhor_san}.")
-            texto.append(f"Avaliação {fmt_aval(antes)} → {fmt_aval(depois)}.")
-        elif classe == "melhor" and i >= 8 and abs(chance(antes) - 50) < 45:
-            texto.append("Melhor lance.")
+            texto.append(f"Avaliação para quem jogou: {fmt_aval(antes * sinal)} → {fmt_aval(depois * sinal)}.")
         classes.append(classe)
         comentarios.append(" ".join(texto))
 
-    def precisao(qs):
-        if not qs:
-            return None
-        return round(sum(max(0.0, min(100.0, 103.1668 * math.exp(-0.04354 * q) - 3.1669)) for q in qs) / len(qs), 1)
-
+    precisao = precisao_lichess(av, primeiro_branco=chess.Board(fen_inicial_completa).turn == chess.WHITE)
     eu, adv = (True, False) if eu_brancas else (False, True)
     decisivo = maior_queda[eu][1] if maior_queda[eu][0] >= 15 else None
     return {
@@ -155,7 +182,7 @@ def comentar(fen_inicial_completa: str, ucis: list[str], analise: dict, eu_branc
         "comentarios": comentarios,
         "melhores": melhores,
         "resumo": {
-            "precisao": precisao(quedas[eu]), "precisao_adv": precisao(quedas[adv]),
+            "precisao": precisao[eu], "precisao_adv": precisao[adv],
             "meus": contagem[eu], "adv": contagem[adv],
             "primeiro_erro_grave": primeiro_grave[eu], "adv_primeiro_erro_grave": primeiro_grave[adv],
             "lance_decisivo": decisivo,   # índice do meio-lance em que mais perdi

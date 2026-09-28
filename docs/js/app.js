@@ -45,10 +45,44 @@
   const INTERVALO_SESSAO_MS = 60 * 60 * 1000;   // partida "seguinte" = até 1h depois
   const PAUSA_LONGA_MS = 60 * 24 * 3600 * 1000; // >60 dias sem jogar o ritmo quebra a linha do rating
 
+  const NOME_PECA = { dama: "Dama", torre: "Torre", bispo: "Bispo", cavalo: "Cavalo", peao: "Peão", rei: "Rei" };
+  // Padrões recorrentes. `t` é a condição (sem o resultado); `cmp` = a mesma condição faz
+  // sentido no outro resultado, então mostramos a comparação; `motor` = exige análise do Stockfish.
+  const PADROES = {
+    vitoria: [
+      { id: "v_virada", nome: "Virada", desc: "Esteve 3+ pontos de material atrás e venceu", t: (p) => p.min_saldo <= -3 },
+      { id: "v_convertida", nome: "Vantagem convertida", desc: "Chegou a 3+ pontos à frente em material e venceu", t: (p) => p.max_saldo >= 3 },
+      { id: "v_adv_dama", nome: "Adversário perdeu a dama", desc: "A dama adversária caiu sem troca de damas", t: (p) => p.adv_perdeu_dama != null, cmp: true },
+      { id: "v_corredor", nome: "Mate do corredor", desc: "Mate com torre ou dama na última fileira", t: (p) => p.mate_tipo === "corredor" && p.motivo === "mate" },
+      { id: "v_mate_rapido", nome: "Mate rápido", desc: "Xeque-mate em até 15 lances", t: (p) => ["rapido", "pastor"].includes(p.mate_tipo) },
+      { id: "v_abandono_cedo", nome: "Adversário abandonou cedo", desc: "Abandono antes do lance 20", t: (p) => p.motivo === "abandono" && p.lances < 20 },
+      { id: "v_tempo_atras", nome: "Venceu no relógio estando atrás", desc: "Vitória por tempo com menos material", t: (p) => p.motivo === "tempo" && p.saldo_final < 0 },
+      { id: "v_erro_adv", nome: "Adversário cometeu erro grave", desc: "Pelo menos um erro grave do adversário", t: (p) => p.adv_erros_graves > 0, motor: true, cmp: true },
+      { id: "v_limpa", nome: "Vitória sem erro grave seu", desc: "Nenhum erro grave seu na partida", t: (p) => p.erros_graves === 0, motor: true, cmp: true },
+    ],
+    derrota: [
+      { id: "d_desperdicada", nome: "Vantagem desperdiçada", desc: "Chegou a 3+ pontos à frente em material e perdeu", t: (p) => p.max_saldo >= 3 },
+      { id: "d_dama", nome: "Perdeu a dama", desc: "Sua dama caiu sem troca de damas", t: (p) => p.perdi_dama != null, cmp: true },
+      { id: "d_dama_cedo", nome: "Perdeu a dama cedo", desc: "Dama perdida até o lance 15", t: (p) => p.perdi_dama != null && p.perdi_dama <= 15, cmp: true },
+      { id: "d_colapso", nome: "Colapso na abertura", desc: "Ficou 3+ pontos atrás até o lance 15 e não recuperou", t: (p) => p.colapso != null && p.colapso <= 15 },
+      { id: "d_sem_roque", nome: "Sem rocar", desc: "Não rocou (partidas com 15+ lances)", t: (p) => !p.roque && p.lances >= 15, cmp: true },
+      { id: "d_pastor", nome: "Mate do pastor", desc: "Mate com a dama em f7/f2 nos 8 primeiros lances", t: (p) => p.mate_tipo === "pastor" },
+      { id: "d_corredor", nome: "Mate do corredor", desc: "Mate com torre ou dama na sua última fileira", t: (p) => p.mate_tipo === "corredor" && p.motivo === "mate" },
+      { id: "d_mate_rapido", nome: "Mate sofrido cedo", desc: "Xeque-mate em até 15 lances", t: (p) => ["rapido", "pastor"].includes(p.mate_tipo) },
+      { id: "d_abandono_cedo", nome: "Abandonou cedo", desc: "Abandonou antes do lance 20", t: (p) => p.motivo === "abandono" && p.lances < 20 },
+      { id: "d_tempo_frente", nome: "Perdeu no relógio sem estar atrás", desc: "Derrota por tempo com material igual ou maior", t: (p) => p.motivo === "tempo" && p.saldo_final >= 0 },
+      { id: "d_apuro", nome: "Entrou em apuro de tempo", desc: "Ficou com menos de 10% do tempo-base", t: (p) => p.apuro === true, cmp: true },
+      { id: "d_um_erro", nome: "Decidida por um único erro grave", desc: "Exatamente um erro grave seu na partida", t: (p) => p.erros_graves === 1, motor: true },
+      { id: "d_erro_cedo", nome: "Erro grave na abertura", desc: "Seu primeiro erro grave veio até o lance 10", t: (p) => p.primeiro_erro_grave != null && p.primeiro_erro_grave <= 10, motor: true, cmp: true },
+    ],
+  };
+  const TODOS_PADROES = [...PADROES.vitoria.map((x) => ({ ...x, res: "vitoria" })), ...PADROES.derrota.map((x) => ({ ...x, res: "derrota" }))];
+
   // ---------- Estado ----------
   const estado = {
     ritmo: "todos", periodo: "tudo", de: "", ate: "",
     abNivel: "familia", abCor: "todas", recentesN: 20,
+    busca: "", resFiltro: "todos", padrao: null,
   };
   let TODAS = [], PERFIL = {}, GERADO = {};
   const graficos = {};
@@ -279,7 +313,13 @@
     const comAcc = ps.filter((p) => p.precisao != null);
     if (comAcc.length) {
       const m = comAcc.reduce((s, p) => s + p.precisao, 0) / comAcc.length;
-      tiles.push({ rotulo: "Precisão média", valor: m.toFixed(1).replace(".", ","), extra: `em ${comAcc.length} partidas analisadas` });
+      tiles.push({ rotulo: "Precisão (Chess.com)", valor: m.toFixed(1).replace(".", ","), extra: `em ${comAcc.length} partidas analisadas lá` });
+    }
+    const comMotor = ps.filter((p) => p.precisao_motor != null);
+    if (comMotor.length) {
+      const m = comMotor.reduce((s, p) => s + p.precisao_motor, 0) / comMotor.length;
+      const g = comMotor.reduce((s, p) => s + p.erros_graves, 0) / comMotor.length;
+      tiles.push({ rotulo: "Precisão (Stockfish)", valor: m.toFixed(1).replace(".", ","), extra: `${g.toFixed(1).replace(".", ",")} erros graves/partida · ${comMotor.length} analisadas` });
     }
     $("kpis").innerHTML = tiles.map((t) => `<div class="kpi"><div class="kpi__rotulo">${t.rotulo}</div><div class="kpi__valor">${t.valor}</div><div class="kpi__extra">${t.extra}</div></div>`).join("");
   }
@@ -524,25 +564,196 @@
       </div>`;
   }
 
-  function renderRecentes(ps) {
+  // ---------- Histórico por ritmo (small multiples) ----------
+  function renderMultiplos(ps) {
+    const ritmos = RITMOS.filter((r) => (estado.ritmo === "todos" || r === estado.ritmo) && ps.some((p) => p.ritmo === r));
+    Object.keys(graficos).filter((k) => k.startsWith("g-mult")).forEach((k) => { graficos[k].destroy(); delete graficos[k]; });
+    $("multiplos").innerHTML = ritmos.length ? ritmos.map((r) => `<div class="card">
+        <div class="multiplo__topo"><h3><span class="ponto" style="background:var(--${r})"></span>${NOME_RITMO[r]}</h3><span class="multiplo__stats" id="mult-stats-${r}"></span></div>
+        <div class="area-grafico area-grafico--media"><canvas id="g-mult-${r}"></canvas></div>
+        <div class="area-grafico area-grafico--mini"><canvas id="g-mult-mes-${r}"></canvas></div>
+        <details class="dados" id="t-mult-${r}"><summary>Ver dados por mês</summary></details>
+      </div>`).join("") : `<p class="vazio">Sem partidas no filtro atual.</p>`;
+
+    const mesTs = (m) => Date.parse(m + "-01T12:00:00");
+    for (const r of ritmos) {
+      const doRitmo = ps.filter((p) => p.ritmo === r);
+      const rat = doRitmo.filter((p) => p.ranqueada && p.variante === "chess" && p.meu_rating);
+      const pts = rat.map((p) => ({ x: p.ts, y: p.meu_rating, p }));
+      const comQuebras = pts.flatMap((pt, i) => (i && pt.x - pts[i - 1].x > PAUSA_LONGA_MS ? [{ x: pt.x - 1, y: null }, pt] : [pt]));
+      const porMes = new Map();
+      doRitmo.forEach((p) => { const m = p.data.slice(0, 7); if (!porMes.has(m)) porMes.set(m, []); porMes.get(m).push(p); });
+      const meses = [...porMes.keys()].sort();
+      const xMin = Math.min(mesTs(meses[0]), pts.length ? pts[0].x : Infinity) - 15 * 864e5;
+      const xMax = Math.max(mesTs(meses[meses.length - 1]) + 30 * 864e5, pts.length ? pts[pts.length - 1].x : 0);
+      const cor = css(`--${r}`);
+      if (rat.length) {
+        const ys = rat.map((p) => p.meu_rating);
+        $(`mult-stats-${r}`).textContent = `atual ${ys[ys.length - 1]} · pico ${Math.max(...ys)} · mín. ${Math.min(...ys)} · ${fmtInt.format(doRitmo.length)} partidas`;
+      } else $(`mult-stats-${r}`).textContent = `${fmtInt.format(doRitmo.length)} partidas (sem rating)`;
+      const eixoX = (mostrar) => ({ type: "linear", min: xMin, max: xMax, grid: { display: false }, display: mostrar, ticks: { callback: (v) => fmtMes(v), maxTicksLimit: 6, maxRotation: 0 } });
+      desenhar(`g-mult-${r}`, {
+        type: "line",
+        data: { datasets: [{ label: `Rating ${NOME_RITMO[r]}`, data: comQuebras, borderColor: cor, backgroundColor: cor, borderWidth: 2, tension: 0.15, spanGaps: false,
+          pointRadius: (ctx) => { const d = ctx.dataset.data, i = ctx.dataIndex; return pts.length < 30 || (d[i] && d[i].y != null && (!d[i - 1] || d[i - 1].y == null) && (!d[i + 1] || d[i + 1].y == null)) ? 3 : 0; },
+          pointHoverRadius: 5, pointBorderColor: css("--superficie"), pointBorderWidth: 2 }] },
+        options: {
+          parsing: false, interaction: { mode: "nearest", axis: "x", intersect: false },
+          scales: { x: eixoX(false), y: { grid: { color: css("--borda") }, border: { display: false }, ticks: { maxTicksLimit: 5 } } },
+          plugins: { legend: { display: false }, tooltip: { callbacks: {
+            title: (it) => new Date(it[0].raw.x).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }),
+            label: (it) => { const p = it.raw.p; return p ? ` ${p.meu_rating} — ${p.resultado === "vitoria" ? "venceu" : p.resultado === "derrota" ? "perdeu" : "empatou"} vs ${p.adversario} (${p.adv_rating})` : ""; } } } },
+        },
+      });
+      const cs = meses.map((m) => contar(porMes.get(m)));
+      desenhar(`g-mult-mes-${r}`, {
+        type: "bar",
+        data: { datasets: RESULTADOS.map((res) => ({ label: res.nome, data: meses.map((m, i) => ({ x: mesTs(m), y: cs[i][res.chave] })), backgroundColor: css(res.cor), barThickness: "flex", maxBarThickness: 14, borderRadius: 0 })) },
+        options: {
+          parsing: false, interaction: { mode: "nearest", axis: "x", intersect: false },
+          scales: { x: { ...eixoX(true), stacked: true, offset: false }, y: { stacked: true, grid: { color: css("--borda") }, border: { display: false }, ticks: { maxTicksLimit: 3, precision: 0 } } },
+          plugins: { legend: { display: false }, tooltip: { callbacks: {
+            title: (it) => { const i = it[0].dataIndex; return `${fmtMes(mesTs(meses[i]))} — ${cs[i].n} partidas`; },
+            label: (it) => ` ${it.dataset.label}: ${it.raw.y}` } } },
+        },
+      });
+      tabelaDados(`t-mult-${r}`, ["Mês", "Partidas", "Vitórias", "Empates", "Derrotas", "Rating no fim"], meses.map((m, i) => {
+        const doMes = rat.filter((p) => p.data.startsWith(m));
+        return [m.split("-").reverse().join("/"), cs[i].n, cs[i].vitoria, cs[i].empate, cs[i].derrota, doMes.length ? doMes[doMes.length - 1].meu_rating : "—"];
+      }));
+    }
+  }
+
+  // ---------- Padrões ----------
+  function renderPadroes(ps) {
+    for (const res of ["vitoria", "derrota"]) {
+      const doRes = ps.filter((p) => p.resultado === res);
+      const outro = ps.filter((p) => p.resultado === (res === "vitoria" ? "derrota" : "vitoria"));
+      const analisadas = doRes.filter((p) => p.precisao_motor != null);
+      const outroAnal = outro.filter((p) => p.precisao_motor != null);
+      const itens = PADROES[res].map((pd) => {
+        const base = pd.motor ? analisadas : doRes;
+        const n = base.filter(pd.t).length;
+        const baseOutro = pd.motor ? outroAnal : outro;
+        return { pd, n, total: base.length, cmp: pd.cmp && baseOutro.length ? baseOutro.filter(pd.t).length / baseOutro.length : null };
+      }).filter((x) => x.n > 0).sort((a, b) => b.n / b.total - a.n / a.total);
+      const cor = res === "vitoria" ? "--vitoria" : "--derrota";
+      const nomeRes = res === "vitoria" ? "vitórias" : "derrotas";
+      const nomeOutro = res === "vitoria" ? "derrotas" : "vitórias";
+      $(`padroes-${res}`).innerHTML = itens.length ? itens.map((x) => `<button type="button" class="padrao" data-padrao="${x.pd.id}">
+          <span class="padrao__nome">${esc(x.pd.nome)}${x.pd.motor ? '<span class="etiqueta-motor">motor</span>' : ""}</span>
+          <span class="padrao__n"><strong>${x.n}</strong><span>${pct(x.n / x.total)} das ${nomeRes}${x.pd.motor ? " analisadas" : ""}</span></span>
+          <span class="padrao__desc">${esc(x.pd.desc)}${x.cmp != null ? ` · nas ${nomeOutro}: ${pct(x.cmp)}` : ""}</span>
+          <span class="padrao__barra"><span style="width:${(x.n / x.total) * 100}%;background:var(${cor})"></span></span>
+        </button>`).join("") : `<p class="vazio">Sem ${nomeRes} no filtro atual.</p>`;
+      $(res === "vitoria" ? "nota-pad-vit" : "nota-pad-der").textContent =
+        `${fmtInt.format(doRes.length)} ${nomeRes} no filtro; ${fmtInt.format(analisadas.length)} já analisadas pelo motor.`;
+    }
+  }
+
+  function renderMatePeca(ps) {
+    const pecas = ["dama", "torre", "bispo", "cavalo", "peao", "rei"];
+    const conta = (res) => pecas.map((pc) => ps.filter((p) => p.resultado === res && p.motivo === "mate" && p.mate_peca === pc).length);
+    const dei = conta("vitoria"), levei = conta("derrota");
+    const usadas = pecas.map((_, i) => dei[i] + levei[i] > 0);
+    const rot = pecas.filter((_, i) => usadas[i]).map((pc) => NOME_PECA[pc]);
+    const filtra = (arr) => arr.filter((_, i) => usadas[i]);
+    desenhar("g-mate-peca", {
+      type: "bar",
+      data: { labels: rot, datasets: [
+        { label: "Mates que você deu", data: filtra(dei), backgroundColor: css("--vitoria"), borderRadius: 4, borderSkipped: "start", maxBarThickness: 28 },
+        { label: "Mates que você levou", data: filtra(levei), backgroundColor: css("--derrota"), borderRadius: 4, borderSkipped: "start", maxBarThickness: 28 },
+      ] },
+      options: {
+        interaction: { mode: "index", intersect: false },
+        scales: { x: { grid: { display: false } }, y: { grid: { color: css("--borda") }, border: { display: false }, ticks: { precision: 0, maxTicksLimit: 5 } } },
+        plugins: { legend: { position: "top", align: "end" } },
+      },
+    });
+    tabelaDados("t-mate-peca", ["Peça", "Mates dados", "Mates sofridos"], rot.map((r, i) => [r, filtra(dei)[i], filtra(levei)[i]]));
+  }
+
+  function renderErros(ps) {
+    const an = ps.filter((p) => p.precisao_motor != null);
+    const faixas = [{ ate: 10, nome: "Lances 1–10" }, { ate: 20, nome: "11–20" }, { ate: 30, nome: "21–30" }, { ate: 40, nome: "31–40" }, { ate: Infinity, nome: "41+" }];
+    const comErro = an.filter((p) => p.primeiro_erro_grave != null);
+    const grupos = faixas.map(() => []);
+    comErro.forEach((p) => grupos[faixas.findIndex((f) => p.primeiro_erro_grave <= f.ate)].push(p));
+    const cs = grupos.map(contar);
+    $("nota-erros").textContent = an.length
+      ? `Em que lance saiu o seu primeiro erro grave, e como a partida terminou. ${comErro.length} de ${an.length} partidas analisadas (${pct(comErro.length / an.length)}) tiveram ao menos um.`
+      : "Ainda não há partidas analisadas pelo motor neste filtro — a análise é feita aos poucos na atualização diária.";
+    graficoVED("g-erros", faixas.map((f, i) => [f.nome, `n=${cs[i].n}`]), cs, "n");
+    tabelaDados("t-erros", ["Primeiro erro grave", "Partidas", "Vitórias", "Empates", "Derrotas"], faixas.map((f, i) => [f.nome, cs[i].n, cs[i].vitoria, cs[i].empate, cs[i].derrota]));
+  }
+
+  // ---------- Explorador de partidas ----------
+  function listaExplorador(ps) {
+    const q = estado.busca.trim().toLowerCase();
+    const pd = estado.padrao && TODOS_PADROES.find((x) => x.id === estado.padrao);
+    return ps.filter((p) =>
+      (estado.resFiltro === "todos" || p.resultado === estado.resFiltro) &&
+      (!pd || (p.resultado === pd.res && pd.t(p) && (!pd.motor || p.precisao_motor != null))) &&
+      (!q || [p.adversario, p.abertura, p.familia, p.eco].some((v) => v && v.toLowerCase().includes(q))));
+  }
+
+  function renderRecentes(psFiltro) {
+    const ps = listaExplorador(psFiltro);
     const lista = ps.slice().reverse().slice(0, estado.recentesN);
     const nomeRes = { vitoria: "Vitória", derrota: "Derrota", empate: "Empate" };
-    $("tabela-recentes").innerHTML = lista.length ? `<table>
+    const pd = estado.padrao && TODOS_PADROES.find((x) => x.id === estado.padrao);
+    $("filtro-padrao").innerHTML = pd ? `<button type="button" class="chip chip--padrao" id="limpar-padrao" aria-label="Remover filtro de padrão">Padrão: ${esc(pd.nome)} ✕</button>` : "";
+    $("tabela-recentes").innerHTML = lista.length ? `<p class="nota" style="margin:0 0 6px;color:var(--texto-suave);font-size:.82rem">${fmtInt.format(ps.length)} partidas${ps.length > lista.length ? ` · mostrando as ${lista.length} mais recentes` : ""}</p><table>
       <thead><tr><th>Data</th><th>Ritmo</th><th>Cor</th><th>Adversário</th><th class="num">Seu rating</th><th>Resultado</th><th>Motivo</th><th>Abertura</th><th class="num">Lances</th><th class="num">Precisão</th><th></th></tr></thead>
-      <tbody>${lista.map((p) => `<tr>
+      <tbody>${lista.map((p) => `<tr class="linha-partida" tabindex="0" data-uuid="${esc(p.uuid)}" title="Ver lance a lance">
         <td>${fmtData(p.data)} ${String(p.hora).padStart(2, "0")}h</td>
         <td><span class="ponto" style="background:var(--${p.ritmo})"></span> ${NOME_RITMO[p.ritmo] || p.ritmo} <span style="color:var(--texto-suave)">${esc(fmtControle(p.controle))}</span>${p.variante !== "chess" ? ` <span style="color:var(--texto-suave)">(${esc(p.variante)})</span>` : ""}</td>
         <td><span class="peca peca--${p.cor}" title="${p.cor}"></span>${p.cor === "brancas" ? "Brancas" : "Pretas"}</td>
-        <td><a href="https://www.chess.com/member/${encodeURIComponent(p.adversario)}" target="_blank" rel="noopener">${esc(p.adversario)}</a> <span style="color:var(--texto-suave)">(${p.adv_rating ?? "—"})</span></td>
+        <td>${esc(p.adversario)} <span style="color:var(--texto-suave)">(${p.adv_rating ?? "—"})</span></td>
         <td class="num">${p.meu_rating ?? "—"}</td>
         <td><span class="badge badge--${p.resultado}">${nomeRes[p.resultado]}</span></td>
         <td>${esc(MOTIVOS[p.motivo] || p.motivo)}</td>
         <td class="abertura-nome">${esc(p.abertura || "—")}</td>
         <td class="num">${p.lances}</td>
-        <td class="num">${p.precisao != null ? p.precisao.toFixed(1).replace(".", ",") : "—"}</td>
-        <td><a href="${esc(p.url)}" target="_blank" rel="noopener">Abrir ↗</a></td></tr>`).join("")}</tbody></table>`
-      : `<p class="vazio">Sem partidas no filtro atual.</p>`;
+        <td class="num">${p.precisao_motor != null ? `<span class="icone-analise" title="Precisão estimada pelo Stockfish">◆</span> ${p.precisao_motor.toFixed(1).replace(".", ",")}` : p.precisao != null ? p.precisao.toFixed(1).replace(".", ",") : "—"}</td>
+        <td><button type="button" class="botao botao--peq" data-abrir="${esc(p.uuid)}">▶ Rever</button></td></tr>`).join("")}</tbody></table>`
+      : `<p class="vazio">Nenhuma partida com esses filtros.</p>`;
     $("mais-recentes").hidden = ps.length <= estado.recentesN;
+  }
+
+  function abrirPartida(uuid) {
+    const p = TODAS.find((x) => x.uuid === uuid);
+    if (p && window.Visualizador) window.Visualizador.abrir(p);
+  }
+
+  function iniciarExplorador() {
+    montarChips("filtro-resultado", [{ chave: "todos", nome: "Todas" }, ...RESULTADOS.map((r) => ({ chave: r.chave, nome: r.nome }))], "resFiltro", (v) => { estado.resFiltro = v; estado.recentesN = 20; });
+    let espera;
+    $("busca").addEventListener("input", () => {
+      clearTimeout(espera);
+      espera = setTimeout(() => { estado.busca = $("busca").value; estado.recentesN = 20; renderRecentes(filtradas()); }, 200);
+    });
+    $("secao-partidas").addEventListener("click", (ev) => {
+      if (ev.target.closest("#limpar-padrao")) { estado.padrao = null; renderRecentes(filtradas()); return; }
+      const linha = ev.target.closest("[data-abrir], tr.linha-partida");
+      if (linha) abrirPartida(linha.dataset.abrir || linha.dataset.uuid);
+    });
+    $("secao-partidas").addEventListener("keydown", (ev) => {
+      const linha = ev.target.closest("tr.linha-partida");
+      if (linha && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); abrirPartida(linha.dataset.uuid); }
+    });
+    document.addEventListener("click", (ev) => {
+      const b = ev.target.closest("[data-padrao]");
+      if (!b) return;
+      const pd = TODOS_PADROES.find((x) => x.id === b.dataset.padrao);
+      estado.padrao = pd.id; estado.resFiltro = pd.res; estado.recentesN = 20;
+      marcarChips("filtro-resultado", pd.res);
+      renderRecentes(filtradas());
+      $("secao-partidas").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    const doHash = () => { const m = location.hash.match(/^#partida=([\w-]+)/); if (m) abrirPartida(m[1]); };
+    window.addEventListener("hashchange", doHash);
+    doHash();
   }
 
   // ---------- Orquestração ----------
@@ -553,10 +764,14 @@
     $("resumo-filtro").textContent = `${fmtInt.format(c.n)} partidas no filtro`;
     renderKPIs(ps);
     renderRating(ps);
+    renderMultiplos(ps);
     renderCor(ps);
     renderForca(ps);
     renderAberturas(ps);
     renderFim(ps);
+    renderPadroes(ps);
+    renderMatePeca(ps);
+    renderErros(ps);
     renderQuando(ps);
     renderSequencias(ps);
     renderHeatmap();
@@ -570,13 +785,13 @@
     const escuroSistema = window.matchMedia("(prefers-color-scheme: dark)");
     const atual = () => document.documentElement.getAttribute("data-theme") || (escuroSistema.matches ? "dark" : "light");
     const marcar = () => botoes.forEach((b) => b.setAttribute("aria-pressed", b.dataset.tema === atual()));
+    const aoMudar = () => { marcar(); if (TODAS.length) renderizar(); if (window.Visualizador) window.Visualizador.redesenhar(); };
     botoes.forEach((b) => b.addEventListener("click", () => {
       document.documentElement.setAttribute("data-theme", b.dataset.tema);
       try { localStorage.setItem("tema", b.dataset.tema); } catch (e) { /* armazenamento indisponível */ }
-      marcar();
-      if (TODAS.length) renderizar();
+      aoMudar();
     }));
-    escuroSistema.addEventListener("change", () => { marcar(); if (TODAS.length) renderizar(); });
+    escuroSistema.addEventListener("change", aoMudar);
     marcar();
   }
 
@@ -597,10 +812,13 @@
 
   iniciarTema();
   iniciarDica();
+  if (window.Visualizador) window.Visualizador.iniciar();
   carregar().then(() => {
+    window.ChessApp = { usuario: (PERFIL.perfil && PERFIL.perfil.username) || PERFIL.usuario, MOTIVOS, NOME_RITMO, fmtControle, fmtData };
     renderCabecalho();
     iniciarFiltros();
     renderizar();
+    iniciarExplorador();
   }).catch((e) => {
     console.error(e);
     $("nome-usuario").textContent = "Erro ao carregar os dados";

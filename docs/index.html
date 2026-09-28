@@ -65,6 +65,12 @@
     </section>
 
     <section class="secao">
+      <h2 class="titulo-secao">Histórico por ritmo</h2>
+      <p class="descricao-secao">Cada ritmo na sua própria escala: rating ao longo do tempo e partidas por mês.</p>
+      <div class="grade" id="multiplos"></div>
+    </section>
+
+    <section class="secao">
       <h2 class="titulo-secao">Resultados</h2>
       <p class="descricao-secao">Vitórias, empates e derrotas no período, no geral e por cor das peças.</p>
       <div class="grade">
@@ -103,6 +109,30 @@
           <h3>Derrotas por motivo</h3>
           <div class="area-grafico area-grafico--baixa"><canvas id="g-fim-der"></canvas></div>
           <details class="dados" id="t-fim-der"><summary>Ver dados</summary></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Padrões de vitória e derrota</h2>
+      <p class="descricao-secao">Situações que se repetem, detectadas reproduzindo cada partida no tabuleiro
+        (e, quando a partida já foi analisada, com o Stockfish). Clique em um padrão para ver as partidas.</p>
+      <div class="grade">
+        <div class="card"><h3>Nas vitórias</h3><p class="nota" id="nota-pad-vit"></p><div id="padroes-vitoria"></div></div>
+        <div class="card"><h3>Nas derrotas</h3><p class="nota" id="nota-pad-der"></p><div id="padroes-derrota"></div></div>
+      </div>
+      <div class="grade" style="margin-top:16px">
+        <div class="card">
+          <h3>Peça que deu o xeque-mate</h3>
+          <p class="nota">Mates que você deu e que sofreu, pela peça que fez o último lance.</p>
+          <div class="area-grafico area-grafico--media"><canvas id="g-mate-peca"></canvas></div>
+          <details class="dados" id="t-mate-peca"><summary>Ver dados</summary></details>
+        </div>
+        <div class="card">
+          <h3>Onde saem os seus erros graves</h3>
+          <p class="nota" id="nota-erros"></p>
+          <div class="area-grafico area-grafico--media"><canvas id="g-erros"></canvas></div>
+          <details class="dados" id="t-erros"><summary>Ver dados</summary></details>
         </div>
       </div>
     </section>
@@ -148,9 +178,15 @@
       </div>
     </section>
 
-    <section class="secao">
-      <h2 class="titulo-secao">Partidas recentes</h2>
+    <section class="secao" id="secao-partidas">
+      <h2 class="titulo-secao">Partidas</h2>
+      <p class="descricao-secao">Clique numa partida para revê-la lance a lance, com a análise do motor quando disponível.</p>
       <div class="card">
+        <div class="controles-card">
+          <input type="search" class="busca" id="busca" placeholder="Buscar adversário ou abertura…" aria-label="Buscar adversário ou abertura" />
+          <div class="chips" id="filtro-resultado"></div>
+          <span id="filtro-padrao"></span>
+        </div>
         <div class="tabela-wrap" id="tabela-recentes"></div>
         <button type="button" class="botao" id="mais-recentes" hidden>Mostrar mais</button>
       </div>
@@ -164,9 +200,46 @@
     </div>
   </footer>
 
+  <dialog class="visualizador" id="visualizador" aria-labelledby="vis-titulo">
+    <div class="vis__topo">
+      <div>
+        <h2 class="vis__titulo" id="vis-titulo"></h2>
+        <p class="vis__sub" id="vis-sub"></p>
+      </div>
+      <div class="vis__acoes">
+        <a class="botao botao--peq" id="vis-link" target="_blank" rel="noopener">Abrir no Chess.com ↗</a>
+        <button type="button" class="botao botao--peq" id="vis-fechar" aria-label="Fechar">✕</button>
+      </div>
+    </div>
+    <div class="vis__corpo">
+      <div class="vis__esq">
+        <div class="vis__jogador" id="vis-jog-topo"></div>
+        <div class="vis__tabuleiro-linha">
+          <div class="vis__barra-aval" id="vis-barra" aria-hidden="true"><div class="vis__barra-brancas" id="vis-barra-b"></div><span id="vis-barra-txt"></span></div>
+          <div class="vis__tabuleiro"><div id="vis-tabuleiro"></div></div>
+        </div>
+        <div class="vis__jogador" id="vis-jog-base"></div>
+        <div class="vis__nav" role="group" aria-label="Navegação">
+          <button type="button" class="botao botao--peq" data-nav="inicio" aria-label="Início">⏮</button>
+          <button type="button" class="botao botao--peq" data-nav="ant" aria-label="Lance anterior">◀</button>
+          <button type="button" class="botao botao--peq" data-nav="prox" aria-label="Próximo lance">▶</button>
+          <button type="button" class="botao botao--peq" data-nav="fim" aria-label="Fim">⏭</button>
+          <button type="button" class="botao botao--peq" data-nav="virar" aria-label="Virar tabuleiro">⇅</button>
+        </div>
+      </div>
+      <div class="vis__dir">
+        <div class="vis__comentario" id="vis-comentario" aria-live="polite"></div>
+        <div class="vis__lances" id="vis-lances"></div>
+        <div class="vis__resumo" id="vis-resumo"></div>
+      </div>
+    </div>
+    <div class="vis__grafico"><p class="nota" id="vis-nota-grafico"></p><div class="area-grafico area-grafico--baixa"><canvas id="g-vis"></canvas></div></div>
+  </dialog>
+
   <div class="dica" id="dica" role="tooltip"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="js/visualizador.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
