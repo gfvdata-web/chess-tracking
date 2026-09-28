@@ -126,7 +126,9 @@
     let html = `<strong>${numeroLance(i)} ${esc(jogo.san[i])} ${cl && MARCA[cl] ? `<span class="cl-${cl}">${MARCA[cl]} ${NOME_CLASSE[cl]}</span>` : ""}</strong>`;
     if (temAnalise()) {
       const txt = jogo.cm[i];
-      html += txt ? esc(txt) : `<span style="color:var(--texto-suave)">Lance sem observações. Avaliação ${fmtAval(jogo.av[ply])}.</span>`;
+      const v = jogo.av[ply];
+      const lado = Math.abs(v) < 30 ? "posição equilibrada" : `vantagem das ${v > 0 ? "brancas" : "pretas"}`;
+      html += txt ? esc(txt) : `<span style="color:var(--texto-suave)">Lance sem observações. Avaliação ${fmtAval(v)} (${lado}).</span>`;
     } else {
       html += `<span style="color:var(--texto-suave)">Partida ainda sem análise do motor — ela é feita aos poucos pela atualização diária.</span>`;
     }
