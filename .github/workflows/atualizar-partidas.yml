@@ -1,7 +1,9 @@
 name: Atualizar partidas
 
 # Coleta diária das partidas no Chess.com (API pública, sem autenticação),
-# retrata o mês corrente, regenera docs/dados/ e commita só se algo mudou.
+# retrata o mês corrente, analisa com Stockfish as partidas ainda não
+# analisadas (mais novas primeiro, com orçamento de tempo — o que faltar fica
+# para a próxima execução), regenera docs/dados/ e commita só se algo mudou.
 # O GitHub Pages (branch main, pasta /docs) republica sozinho a cada push.
 #
 # Horário: 09:17 UTC (06:17 em Brasília) — de madrugada no Brasil, depois das
@@ -16,6 +18,10 @@ on:
         description: 'Rebaixar todo o histórico (--completo)'
         type: boolean
         default: false
+      orcamento:
+        description: 'Minutos de análise com Stockfish'
+        type: number
+        default: 45
 
 permissions:
   contents: write
@@ -37,15 +43,18 @@ jobs:
           cache: pip
 
       - name: Instalar dependências
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update -qq && sudo apt-get install -y -qq stockfish
+          /usr/games/stockfish <<< 'quit' | head -1
 
       - name: Rodar pipeline
+        env:
+          STOCKFISH_PATH: /usr/games/stockfish
         run: |
-          if [ "${{ inputs.completo }}" = "true" ]; then
-            python run_pipeline.py --completo
-          else
-            python run_pipeline.py
-          fi
+          ARGS="--analisar --orcamento-min ${{ inputs.orcamento || 45 }}"
+          if [ "${{ inputs.completo }}" = "true" ]; then ARGS="$ARGS --completo"; fi
+          python run_pipeline.py $ARGS
 
       - name: Commitar se algo mudou
         run: |

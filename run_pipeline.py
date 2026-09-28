@@ -1,9 +1,10 @@
-"""Orquestra o pipeline: coleta (Etapa 2) -> tratamento (Etapa 3) -> publicação (Etapa 5).
+"""Orquestra o pipeline: coleta (2) -> tratamento (3) -> análise por motor (4, opcional) -> publicação (5).
 
 Uso:
     python run_pipeline.py                # incremental: só meses novos + mês corrente
     python run_pipeline.py --completo     # rebaixa e retrata todo o histórico
     python run_pipeline.py --sem-coleta   # retrata a partir de dados/brutos/, sem chamar a API
+    python run_pipeline.py --analisar --orcamento-min 45   # + Stockfish nas partidas ainda não analisadas
     CHESS_USER=outra_conta python run_pipeline.py
 """
 import argparse
@@ -13,6 +14,8 @@ import sys
 
 from src import config
 from src.coleta import chesscom
+from src.analise import motor
+from src.publicacao import painel
 from src.tratamento import partidas
 
 log = logging.getLogger("pipeline")
@@ -33,6 +36,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--completo", action="store_true", help="rebaixa todos os meses")
     ap.add_argument("--sem-coleta", action="store_true", help="não chama a API; usa dados/brutos/")
+    ap.add_argument("--analisar", action="store_true", help="analisa com Stockfish as partidas pendentes")
+    ap.add_argument("--profundidade", type=int, default=12, help="profundidade do motor (padrão 12)")
+    ap.add_argument("--orcamento-min", type=float, default=45, help="tempo máximo de análise, em minutos")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
 
@@ -53,12 +59,9 @@ def main() -> int:
         log.error("Erro na API do Chess.com: %s", e)
         return 1
 
-    try:
-        from src.publicacao import painel
-    except ImportError:
-        log.info("Publicação ainda não implementada; pulando.")
-    else:
-        painel.publicar(usuario, cfg)
+    if args.analisar:
+        motor.analisar(usuario, args.profundidade, args.orcamento_min)
+    painel.publicar(usuario, cfg)
     return 0
 
 
