@@ -158,7 +158,7 @@
     link.textContent = nome;
     link.href = pf.url || `https://www.chess.com/member/${PERFIL.usuario}`;
     document.title = `${nome} — Chess Tracking`;
-    if (pf.avatar) { const a = $("avatar"); a.src = pf.avatar; a.alt = `Avatar de ${nome}`; a.hidden = false; }
+    if (pf.avatar) { const a = $("avatar"); a.onerror = () => { a.hidden = true; }; a.src = pf.avatar; a.alt = `Avatar de ${nome}`; a.hidden = false; }
     const gerado = GERADO.gerado_em ? new Date(GERADO.gerado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "—";
     $("meta-gerado").textContent = `${fmtInt.format(TODAS.length)} partidas desde ${fmtData(TODAS[0].data)} · atualizado em ${gerado}`;
     $("fuso").textContent = PERFIL.fuso_horario || "UTC";
