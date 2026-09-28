@@ -40,7 +40,7 @@ novos e o mês corrente (coleta incremental, sem duplicar partidas).
 | `python run_pipeline.py --sem-coleta` | Retrata a partir de `dados/brutos/`, sem chamar a API |
 | `python run_pipeline.py --usuario maherculano` | Só uma conta (pode repetir `--usuario`) |
 | `python run_pipeline.py --analisar` | Também analisa com Stockfish as partidas pendentes (precisa do Stockfish instalado; `STOCKFISH_PATH` se não estiver no PATH) |
-| `python run_pipeline.py --analisar --orcamento-min 10 --nos 1000000` | Limita o tempo de análise e define o esforço do motor (nós por posição) |
+| `python run_pipeline.py --analisar --orcamento-min 10 --nos 250000` | Limita o tempo de análise e define o esforço do motor (nós por posição) |
 | `python -m src.analise.medir --nos d12,250000,1000000` | Compara custo × qualidade de esforços diferentes do motor (não grava nada) |
 | `python run_pipeline.py -v` | Log detalhado |
 

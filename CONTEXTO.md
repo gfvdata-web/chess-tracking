@@ -119,7 +119,17 @@ A página combina esses fatos nos **padrões de vitória e derrota** (`PADROES` 
 - Incremental: só analisa partidas sem análise da `VERSAO` atual ou com menos nós (análises antigas,
   por profundidade, são refeitas). Se o motor encerrar (o SF 19 sai diante de posição inválida), é reaberto.
   Ordem: mais novas primeiro; para no orçamento de tempo e grava a cada 25 partidas.
-- No GitHub Actions (4 vCPU), antes: Stockfish 16 a profundidade 12, ~38 partidas por minuto.
+- Medição no GitHub Actions (4 vCPU, Stockfish 19, 10 partidas recentes, referência = 4M nós):
+
+  | esforço | partidas/min | mesma classe da ref. | erros graves da ref. achados | precisão × Chess.com |
+  |---|---|---|---|---|
+  | prof. 12 | 36 | 88,5% | 64 de 69 | 58,8 × 58,7 |
+  | **250 mil nós (padrão)** | **10,4** | **91,2%** | **65 de 69** | **58,7 × 58,7** |
+  | 1 milhão | 2,6 | 93,9% | 64 de 69 | 58,3 × 58,7 |
+  | 4 milhões | 0,7 | 100% | 69 de 69 | 57,8 × 58,7 |
+
+  Acima de 250 mil o ganho é pequeno e o custo cresce linearmente; a diferença de ~10 pontos
+  para a precisão do Chess.com vinha do Stockfish 16, não da profundidade.
 - `python -m src.analise.medir --nos d12,250000,1000000` (ou o input `medir` do workflow) compara
   custo × qualidade de esforços diferentes nas mesmas partidas, sem gravar nada.
 

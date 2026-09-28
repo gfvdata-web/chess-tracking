@@ -3,7 +3,7 @@
 Avalia a posição inicial e a posição após cada meio-lance de cada partida e
 grava em dados/analises/<usuario>/AAAA-MM.json (versionado):
 
-    { "<uuid>": { "v": VERSAO, "nos": 1000000, "motor": "Stockfish 19",
+    { "<uuid>": { "v": VERSAO, "nos": 250000, "motor": "Stockfish 19",
                   "av": [cp do ponto de vista das brancas, ...],   # n+1 posições
                   "mv": ["e2e4", ...],                              # melhor lance em cada posição
                   "pv": ["e2e4 e7e5 g1f3 b8c6", ...],               # linha principal (4 meios-lances)
@@ -41,7 +41,7 @@ VERSAO = 1
 MATE = 10000
 PV_MEIOS_LANCES = 4
 SALVAR_A_CADA = 25   # partidas — protege o progresso se o job for interrompido
-NOS_PADRAO = 1_000_000   # nós por posição
+NOS_PADRAO = 250_000   # nós por posição — medido em 2026-09-28: ver CONTEXTO.md
 ALT_VERSAO = 2
 MULTIPV = 3          # alternativas por posição de treino (mesmo limite de nós)
 
