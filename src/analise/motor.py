@@ -3,7 +3,7 @@
 Avalia a posição inicial e a posição após cada meio-lance de cada partida e
 grava em dados/analises/<usuario>/AAAA-MM.json (versionado):
 
-    { "<uuid>": { "v": VERSAO, "prof": 12,
+    { "<uuid>": { "v": VERSAO, "nos": 1000000, "motor": "Stockfish 19",
                   "av": [cp do ponto de vista das brancas, ...],   # n+1 posições
                   "mv": ["e2e4", ...],                              # melhor lance em cada posição
                   "pv": ["e2e4 e7e5 g1f3 b8c6", ...],               # linha principal (4 meios-lances)
@@ -13,9 +13,15 @@ Mate é codificado como ±(MATE - distância): +9997 = brancas dão mate em 3.
 Os comentários em português são gerados depois, na publicação (comentarios.py),
 então dá para mudar o texto sem rodar o motor de novo.
 
+O esforço por posição é um limite de nós (posições calculadas), não de
+profundidade: o custo fica previsível — profundidade fixa é instantânea na
+abertura e cara no meio-jogo — e é o mesmo critério da análise do Lichess.
+Análises feitas com menos nós (ou com profundidade, formato antigo) são refeitas.
+
 Sem Stockfish instalado a etapa é pulada com um aviso (a página funciona sem
-análise). O GitHub Action instala o Stockfish e roda com orçamento de tempo,
-das partidas mais novas para as mais antigas; o que faltar fica para o dia seguinte.
+análise). O GitHub Action baixa o Stockfish oficial (versão fixada no workflow)
+e roda com orçamento de tempo, das partidas mais novas para as mais antigas;
+o que faltar fica para o dia seguinte.
 """
 import json
 import logging
@@ -35,9 +41,9 @@ VERSAO = 1
 MATE = 10000
 PV_MEIOS_LANCES = 4
 SALVAR_A_CADA = 25   # partidas — protege o progresso se o job for interrompido
-ALT_VERSAO = 1
-MULTIPV = 3          # alternativas por posição de treino
-ALT_PROFUNDIDADE = 14
+NOS_PADRAO = 1_000_000   # nós por posição
+ALT_VERSAO = 2
+MULTIPV = 3          # alternativas por posição de treino (mesmo limite de nós)
 
 
 def encontrar_stockfish() -> str | None:
@@ -67,6 +73,12 @@ def _codificar(score: chess.engine.PovScore) -> int:
     return max(-MATE + 100, min(MATE - 100, s.score()))
 
 
+def abrir_motor(caminho: str) -> chess.engine.SimpleEngine:
+    engine = chess.engine.SimpleEngine.popen_uci(caminho)
+    engine.configure({"Threads": max(1, os.cpu_count() or 1), "Hash": 256})
+    return engine
+
+
 def analisar_partida(engine: chess.engine.SimpleEngine, pgn: str, limite: chess.engine.Limit) -> dict | None:
     jogo = ler_partida(pgn)
     if jogo is None:
@@ -90,7 +102,7 @@ def analisar_partida(engine: chess.engine.SimpleEngine, pgn: str, limite: chess.
     for mov in jogo.mainline_moves():
         board.push(mov)
         avaliar()
-    return {"v": VERSAO, "prof": limite.depth, "av": av, "mv": mv, "pv": pv}
+    return {"v": VERSAO, "nos": limite.nodes, "motor": engine.id.get("name", ""), "av": av, "mv": mv, "pv": pv}
 
 
 def _gravar(usuario: str, por_mes: dict[str, dict]) -> None:
@@ -122,7 +134,7 @@ def alternativas_partida(engine: chess.engine.SimpleEngine, p: dict, an: dict, l
     return saida
 
 
-def analisar(usuario: str, profundidade: int = 12, orcamento_min: float = 45) -> int:
+def analisar(usuario: str, nos: int = NOS_PADRAO, orcamento_min: float = 45) -> int:
     caminho = encontrar_stockfish()
     if not caminho:
         log.warning("Stockfish não encontrado (instale ou defina STOCKFISH_PATH); análise por motor pulada.")
@@ -139,7 +151,7 @@ def analisar(usuario: str, profundidade: int = 12, orcamento_min: float = 45) ->
 
     def precisa_principal(mes, p):
         an = por_mes_analises[mes].get(p["uuid"]) or {}
-        return an.get("v") != VERSAO or (an.get("prof") or 0) < profundidade
+        return an.get("v") != VERSAO or (an.get("nos") or 0) < nos
 
     def precisa_alternativas(mes, p):
         an = por_mes_analises[mes].get(p["uuid"]) or {}
@@ -150,17 +162,31 @@ def analisar(usuario: str, profundidade: int = 12, orcamento_min: float = 45) ->
     if not pendentes and not any(precisa_alternativas(m, p) for m, ps in por_mes_partidas.items() for p in ps):
         log.info("Todas as partidas já analisadas (incluindo as posições de treino).")
         return 0
-    log.info("Stockfish: %s | %d partidas pendentes | profundidade %d | orçamento %.0f min",
-             caminho, len(pendentes), profundidade, orcamento_min)
+    log.info("Stockfish: %s | %d partidas pendentes | %d nós por posição | orçamento %.0f min",
+             caminho, len(pendentes), nos, orcamento_min)
 
     fim = time.monotonic() + orcamento_min * 60
     feitas, feitas_alt, alterados = 0, 0, set()
-    engine = chess.engine.SimpleEngine.popen_uci(caminho)
-    try:
-        engine.configure({"Threads": max(1, os.cpu_count() or 1), "Hash": 256})
+    engine = abrir_motor(caminho)
+    log.info("Motor: %s", engine.id.get("name", "?"))
 
+    def reabrir_se_morreu():
+        # O Stockfish 19 encerra o processo diante de posição/comando inválido;
+        # sem reabrir, todas as partidas seguintes falhariam.
+        nonlocal engine
+        try:
+            engine.ping()
+        except chess.engine.EngineError:
+            log.warning("Motor encerrado; reabrindo.")
+            try:
+                engine.quit()
+            except Exception:
+                pass
+            engine = abrir_motor(caminho)
+
+    try:
         # 1) Avaliação lance a lance das partidas pendentes
-        limite = chess.engine.Limit(depth=profundidade)
+        limite = chess.engine.Limit(nodes=nos)
         for mes, p in pendentes:
             if time.monotonic() > fim:
                 log.info("Orçamento de tempo esgotado; %d partidas ficam para a próxima execução.", len(pendentes) - feitas)
@@ -169,6 +195,7 @@ def analisar(usuario: str, profundidade: int = 12, orcamento_min: float = 45) ->
                 res = analisar_partida(engine, p.get("pgn") or "", limite)
             except chess.engine.EngineError:
                 log.exception("Motor falhou em %s", p["url"])
+                reabrir_se_morreu()
                 continue
             if res is None:
                 log.warning("PGN ilegível, sem análise: %s", p["url"])
@@ -183,18 +210,18 @@ def analisar(usuario: str, profundidade: int = 12, orcamento_min: float = 45) ->
         # 2) Alternativas (multipv) nas posições de treino — depois da análise principal
         pend_alt = mais_novas([(m, p) for m, ps in por_mes_partidas.items() for p in ps if precisa_alternativas(m, p)])
         if pend_alt and time.monotonic() < fim:
-            log.info("Posições de treino: %d partidas com alternativas pendentes (multipv %d, profundidade %d)",
-                     len(pend_alt), MULTIPV, ALT_PROFUNDIDADE)
-        limite_alt = chess.engine.Limit(depth=ALT_PROFUNDIDADE)
+            log.info("Posições de treino: %d partidas com alternativas pendentes (multipv %d, %d nós)",
+                     len(pend_alt), MULTIPV, nos)
         for mes, p in pend_alt:
             if time.monotonic() > fim:
                 log.info("Orçamento esgotado; alternativas de %d partidas ficam para a próxima execução.", len(pend_alt) - feitas_alt)
                 break
             an = por_mes_analises[mes][p["uuid"]]
             try:
-                an["alt"] = alternativas_partida(engine, p, an, limite_alt)
+                an["alt"] = alternativas_partida(engine, p, an, limite)
             except chess.engine.EngineError:
                 log.exception("Motor falhou (alternativas) em %s", p["url"])
+                reabrir_se_morreu()
                 continue
             an["alt_v"] = ALT_VERSAO
             alterados.add(mes)

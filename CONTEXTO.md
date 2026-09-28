@@ -107,12 +107,19 @@ A página combina esses fatos nos **padrões de vitória e derrota** (`PADROES` 
 
 ### Motor — `motor.py` (Stockfish)
 
-- Avalia a posição inicial e a posição após cada meio-lance (profundidade 12 por padrão).
+- Stockfish oficial, versão e SHA-256 fixados no workflow (hoje **Stockfish 19**); trocar a
+  versão é editar `SF_TAG`/`SF_SHA256` em `atualizar-partidas.yml`.
+- Avalia a posição inicial e a posição após cada meio-lance com limite de **nós** por posição
+  (`NOS_PADRAO`), não de profundidade: custo previsível e o mesmo critério da análise do Lichess.
+  A análise grava `nos` e `motor` (nome e versão).
 - Guarda por partida: `av` (avaliação em centipeões do ponto de vista das brancas; mate =
   ±(10000 − distância)), `mv` (melhor lance UCI), `pv` (4 meios-lances da linha principal).
-- Incremental: só analisa partidas sem análise da `VERSAO` atual ou com profundidade menor.
+- Incremental: só analisa partidas sem análise da `VERSAO` atual ou com menos nós (análises antigas,
+  por profundidade, são refeitas). Se o motor encerrar (o SF 19 sai diante de posição inválida), é reaberto.
   Ordem: mais novas primeiro; para no orçamento de tempo e grava a cada 25 partidas.
-- No GitHub Actions (Stockfish 16, 4 vCPU): ~38 partidas por minuto.
+- No GitHub Actions (4 vCPU), antes: Stockfish 16 a profundidade 12, ~38 partidas por minuto.
+- `python -m src.analise.medir --nos d12,250000,1000000` (ou o input `medir` do workflow) compara
+  custo × qualidade de esforços diferentes nas mesmas partidas, sem gravar nada.
 
 ### Comentários — `comentarios.py`
 
@@ -130,7 +137,7 @@ A página combina esses fatos nos **padrões de vitória e derrota** (`PADROES` 
   ≥ 15 p.p. (erro grave), desde que eu tivesse ≥ 10% de chance antes (errar numa posição já
   perdida não ensina nada). Só xadrez padrão.
 - O motor calcula, depois da análise principal e dentro do mesmo orçamento, as 3 melhores
-  jogadas dessas posições (`multipv 3`, profundidade 14) e grava em `alt` da análise da partida.
+  jogadas dessas posições (`multipv 3`, mesmo limite de nós) e grava em `alt` da análise da partida.
 - Lances aceitos no treino: o melhor lance da análise principal + alternativas do multipv que
   perdem no máximo 5 p.p. de chance em relação à melhor. Sem `alt` ainda, só o melhor lance vale.
 - Página: `treino.html` + `js/treino.js`. O tabuleiro só permite lances legais (lista gerada

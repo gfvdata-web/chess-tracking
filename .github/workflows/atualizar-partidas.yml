@@ -2,7 +2,7 @@ name: Atualizar partidas
 
 # Coleta diária das partidas no Chess.com (API pública, sem autenticação) de
 # cada jogador de config.json,
-# retrata o mês corrente, analisa com Stockfish as partidas ainda não
+# retrata o mês corrente, analisa com Stockfish (binário oficial, versão fixada) as partidas ainda não
 # analisadas (mais novas primeiro, com orçamento de tempo — o que faltar fica
 # para a próxima execução), regenera docs/dados/ e commita só se algo mudou.
 # O GitHub Pages (branch main, pasta /docs) republica sozinho a cada push.
@@ -27,6 +27,10 @@ on:
         description: 'Só esta conta do Chess.com (vazio = todos do config.json)'
         type: string
         default: ''
+      medir:
+        description: 'Só medir custo × qualidade destes esforços (ex.: d12,250000,1000000); não analisa nem commita'
+        type: string
+        default: ''
 
 permissions:
   contents: write
@@ -48,14 +52,28 @@ jobs:
           cache: pip
 
       - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      # Binário oficial, versão e hash fixados: a análise só muda quando a gente
+      # troca a versão aqui (o apt do Ubuntu fica anos atrás e muda sozinho).
+      - name: Baixar Stockfish
+        env:
+          SF_TAG: sf_19
+          SF_SHA256: 9defc0d4e55d49c65a6d042f3e571a39fcea499ade6dbe741b53b8c65e03611f
         run: |
-          pip install -r requirements.txt
-          sudo apt-get update -qq && sudo apt-get install -y -qq stockfish
-          /usr/games/stockfish <<< 'quit' | head -1
+          curl -fsSL -o sf.tar.gz "https://github.com/official-stockfish/Stockfish/releases/download/$SF_TAG/stockfish-linux-x86-64-universal.tar.gz"
+          echo "$SF_SHA256  sf.tar.gz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/sf" && tar -xzf sf.tar.gz -C "$RUNNER_TEMP/sf" && rm sf.tar.gz
+          BIN=$(find "$RUNNER_TEMP/sf" -type f -name 'stockfish*' ! -name '*.*' -perm -u+x | head -1)
+          echo "STOCKFISH_PATH=$BIN" >> "$GITHUB_ENV"
+          "$BIN" <<< 'quit' | head -1
+
+      - name: Medir esforço do motor
+        if: inputs.medir != ''
+        run: python -m src.analise.medir --nos "${{ inputs.medir }}"
 
       - name: Rodar pipeline
-        env:
-          STOCKFISH_PATH: /usr/games/stockfish
+        if: inputs.medir == ''
         run: |
           ARGS="--analisar --orcamento-min ${{ inputs.orcamento || 45 }}"
           if [ "${{ inputs.completo }}" = "true" ]; then ARGS="$ARGS --completo"; fi
@@ -63,6 +81,7 @@ jobs:
           python run_pipeline.py $ARGS
 
       - name: Commitar se algo mudou
+        if: inputs.medir == ''
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'

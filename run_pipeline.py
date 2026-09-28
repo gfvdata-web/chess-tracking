@@ -42,7 +42,7 @@ def main() -> int:
     ap.add_argument("--completo", action="store_true", help="rebaixa todos os meses")
     ap.add_argument("--sem-coleta", action="store_true", help="não chama a API; usa dados/brutos/")
     ap.add_argument("--analisar", action="store_true", help="analisa com Stockfish as partidas pendentes")
-    ap.add_argument("--profundidade", type=int, default=12, help="profundidade do motor (padrão 12)")
+    ap.add_argument("--nos", type=int, default=motor.NOS_PADRAO, help=f"nós do motor por posição (padrão {motor.NOS_PADRAO})")
     ap.add_argument("--orcamento-min", type=float, default=45, help="tempo total de análise, em minutos")
     ap.add_argument("--usuario", action="append", help="roda só para esta conta (pode repetir)")
     ap.add_argument("-v", "--verbose", action="store_true")
@@ -85,7 +85,7 @@ def main() -> int:
                 log.info("Orçamento do motor esgotado antes de %s.", j["usuario"])
                 break
             log.info("Motor para %s: %.1f min", j["usuario"], fatia)
-            motor.analisar(j["usuario"], args.profundidade, fatia)
+            motor.analisar(j["usuario"], args.nos, fatia)
 
     mudou = False
     for j in jogadores:
