@@ -17,6 +17,7 @@ from statistics import mean
 
 from src import config
 from src.analise import comentarios, motor, tabuleiro
+from src.publicacao import treino
 
 log = logging.getLogger("publicacao")
 
@@ -146,6 +147,7 @@ def publicar(usuario: str, cfg: dict) -> None:
     analises = motor.carregar_analises(usuario)
 
     linhas, mudou_jogos, n_analisadas, sem_tabuleiro = [], 0, 0, 0
+    posicoes_treino = []
     for mes, ps in meses.items():
         jogos_mes = {}
         for p in ps:
@@ -165,9 +167,18 @@ def publicar(usuario: str, cfg: dict) -> None:
             linhas.append(linha(p, mes, rep, com))
             if rep is not None:
                 jogos_mes[p["uuid"]] = jogo_visualizador(p, rep, com)
+            if rep is not None and com is not None:
+                try:
+                    posicoes_treino.extend(treino.extrair(p, mes, rep, com, an))
+                except Exception:
+                    log.exception("Falha ao extrair posições de treino de %s", p["url"])
         mudou_jogos += _gravar_se_mudou(config.DIR_DOCS_DADOS / "jogos" / f"{mes}.json", jogos_mes)
 
     linhas.sort(key=lambda l: l[COLUNAS.index("fim")])
+    posicoes_treino.sort(key=lambda x: (x["data"], x["ply"]), reverse=True)
+    mudou_jogos += _gravar_se_mudou(config.DIR_DOCS_DADOS / "treino.json", {"posicoes": posicoes_treino})
+    log.info("Treino: %d posições de erro grave (%d com alternativas do motor)",
+             len(posicoes_treino), sum(1 for x in posicoes_treino if len(x["aceitos"]) > 1 or analises.get(x["uuid"], {}).get("alt_v")))
     mudou_partidas = _gravar_se_mudou(config.DIR_DOCS_DADOS / "partidas.json", {"colunas": COLUNAS, "linhas": linhas})
 
     arq_perfil = config.RAIZ / "dados" / "perfil" / f"{usuario}.json"

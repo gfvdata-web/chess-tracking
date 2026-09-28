@@ -9,7 +9,9 @@ Coleta automática do histórico de partidas de uma conta do Chess.com (hoje:
   sem roque, tipos de mate, erros graves por fase…), cada um clicável para listar as partidas;
 - **visualizador lance a lance** de qualquer partida do histórico, com relógio, saldo de
   material e — quando a partida já foi analisada pelo **Stockfish** — avaliação, classificação
-  de cada lance (imprecisão/erro/erro grave), melhor lance e comentário em português.
+  de cada lance (imprecisão/erro/erro grave), melhor lance e comentário em português;
+- **aba Treino** (`treino.html`): as posições logo antes de cada erro grave seu, para achar o
+  lance certo no tabuleiro — com dica, solução, filtro por ritmo e fase, e revisão das erradas.
 
 **Página publicada:** https://gfvdata-web.github.io/chess-tracking/
 
@@ -87,8 +89,10 @@ gh workflow run atualizar-partidas.yml -f orcamento=45
 | `src/analise/tabuleiro.py` | 4 | Reproduz a partida (python-chess): posições, material, padrões |
 | `src/analise/motor.py` | 4 | Stockfish incremental → `dados/analises/<usuario>/AAAA-MM.json` |
 | `src/analise/comentarios.py` | 4 | Classificação, comentários e precisão a partir da análise |
+| `src/analise/treino.py` | 4 | Critério das posições de treino (erro grave sem estar perdido) |
 | `src/publicacao/painel.py` | 5 | Gera `docs/dados/` (tabela de partidas + lances por mês) |
-| `docs/` | 6 | Página estática (`js/app.js` estatísticas, `js/visualizador.js` tabuleiro) |
+| `src/publicacao/treino.py` | 5 | Gera `docs/dados/treino.json` (posições, lances legais, soluções) |
+| `docs/` | 6 | Página estática: `index.html` + `js/app.js` (estatísticas) + `js/visualizador.js` (partidas); `treino.html` + `js/treino.js` |
 
 ## Licença dos dados
 

@@ -6,7 +6,8 @@ grava em dados/analises/<usuario>/AAAA-MM.json (versionado):
     { "<uuid>": { "v": VERSAO, "prof": 12,
                   "av": [cp do ponto de vista das brancas, ...],   # n+1 posições
                   "mv": ["e2e4", ...],                              # melhor lance em cada posição
-                  "pv": ["e2e4 e7e5 g1f3 b8c6", ...] } }            # linha principal (4 meios-lances)
+                  "pv": ["e2e4 e7e5 g1f3 b8c6", ...],               # linha principal (4 meios-lances)
+                  "alt_v": 1, "alt": { "<ply>": [["h6h5", -180], ...] } } }   # 3 melhores lances nas posições de treino
 
 Mate é codificado como ±(MATE - distância): +9997 = brancas dão mate em 3.
 Os comentários em português são gerados depois, na publicação (comentarios.py),
@@ -34,6 +35,9 @@ VERSAO = 1
 MATE = 10000
 PV_MEIOS_LANCES = 4
 SALVAR_A_CADA = 25   # partidas — protege o progresso se o job for interrompido
+ALT_VERSAO = 1
+MULTIPV = 3          # alternativas por posição de treino
+ALT_PROFUNDIDADE = 14
 
 
 def encontrar_stockfish() -> str | None:
@@ -98,6 +102,26 @@ def _gravar(usuario: str, por_mes: dict[str, dict]) -> None:
         arq.write_text(json.dumps(ordenado, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
 
+
+
+def alternativas_partida(engine: chess.engine.SimpleEngine, p: dict, an: dict, limite: chess.engine.Limit) -> dict:
+    """Para cada posição de treino da partida, as 3 melhores jogadas: {ply: [[uci, cp_brancas], ...]}."""
+    from src.analise.treino import plies_de_treino   # import local: treino -> comentarios -> motor
+
+    jogo = ler_partida(p.get("pgn") or "")
+    if jogo is None:
+        return {}
+    board = jogo.board()
+    alvos = set(plies_de_treino(an["av"], p["cor"] == "brancas", board.turn == chess.WHITE))
+    saida = {}
+    for i, mov in enumerate(jogo.mainline_moves()):
+        if i in alvos:
+            infos = engine.analyse(board, limite, multipv=MULTIPV)
+            saida[str(i)] = [[info["pv"][0].uci(), _codificar(info["score"])] for info in infos if info.get("pv")]
+        board.push(mov)
+    return saida
+
+
 def analisar(usuario: str, profundidade: int = 12, orcamento_min: float = 45) -> int:
     caminho = encontrar_stockfish()
     if not caminho:
@@ -113,24 +137,30 @@ def analisar(usuario: str, profundidade: int = 12, orcamento_min: float = 45) ->
         arq = dir_analises(usuario) / f"{mes}.json"
         por_mes_analises[mes] = json.loads(arq.read_text(encoding="utf-8")) if arq.exists() else {}
 
-    pendentes = [
-        (mes, p) for mes, ps in por_mes_partidas.items() for p in ps
-        if (por_mes_analises[mes].get(p["uuid"]) or {}).get("v") != VERSAO
-        or (por_mes_analises[mes][p["uuid"]].get("prof") or 0) < profundidade
-    ]
-    pendentes.sort(key=lambda x: x[1]["fim_utc"], reverse=True)   # mais novas primeiro
-    if not pendentes:
-        log.info("Todas as partidas já analisadas.")
+    def precisa_principal(mes, p):
+        an = por_mes_analises[mes].get(p["uuid"]) or {}
+        return an.get("v") != VERSAO or (an.get("prof") or 0) < profundidade
+
+    def precisa_alternativas(mes, p):
+        an = por_mes_analises[mes].get(p["uuid"]) or {}
+        return bool(an) and an.get("alt_v") != ALT_VERSAO and p.get("variante", "chess") == "chess"
+
+    mais_novas = lambda lst: sorted(lst, key=lambda x: x[1]["fim_utc"], reverse=True)
+    pendentes = mais_novas([(m, p) for m, ps in por_mes_partidas.items() for p in ps if precisa_principal(m, p)])
+    if not pendentes and not any(precisa_alternativas(m, p) for m, ps in por_mes_partidas.items() for p in ps):
+        log.info("Todas as partidas já analisadas (incluindo as posições de treino).")
         return 0
     log.info("Stockfish: %s | %d partidas pendentes | profundidade %d | orçamento %.0f min",
              caminho, len(pendentes), profundidade, orcamento_min)
 
-    limite = chess.engine.Limit(depth=profundidade)
     fim = time.monotonic() + orcamento_min * 60
-    feitas, alterados = 0, set()
+    feitas, feitas_alt, alterados = 0, 0, set()
     engine = chess.engine.SimpleEngine.popen_uci(caminho)
     try:
         engine.configure({"Threads": max(1, os.cpu_count() or 1), "Hash": 256})
+
+        # 1) Avaliação lance a lance das partidas pendentes
+        limite = chess.engine.Limit(depth=profundidade)
         for mes, p in pendentes:
             if time.monotonic() > fim:
                 log.info("Orçamento de tempo esgotado; %d partidas ficam para a próxima execução.", len(pendentes) - feitas)
@@ -149,8 +179,31 @@ def analisar(usuario: str, profundidade: int = 12, orcamento_min: float = 45) ->
             if feitas % SALVAR_A_CADA == 0:
                 _gravar(usuario, {m: por_mes_analises[m] for m in alterados})
                 log.info("… %d/%d partidas analisadas", feitas, len(pendentes))
+
+        # 2) Alternativas (multipv) nas posições de treino — depois da análise principal
+        pend_alt = mais_novas([(m, p) for m, ps in por_mes_partidas.items() for p in ps if precisa_alternativas(m, p)])
+        if pend_alt and time.monotonic() < fim:
+            log.info("Posições de treino: %d partidas com alternativas pendentes (multipv %d, profundidade %d)",
+                     len(pend_alt), MULTIPV, ALT_PROFUNDIDADE)
+        limite_alt = chess.engine.Limit(depth=ALT_PROFUNDIDADE)
+        for mes, p in pend_alt:
+            if time.monotonic() > fim:
+                log.info("Orçamento esgotado; alternativas de %d partidas ficam para a próxima execução.", len(pend_alt) - feitas_alt)
+                break
+            an = por_mes_analises[mes][p["uuid"]]
+            try:
+                an["alt"] = alternativas_partida(engine, p, an, limite_alt)
+            except chess.engine.EngineError:
+                log.exception("Motor falhou (alternativas) em %s", p["url"])
+                continue
+            an["alt_v"] = ALT_VERSAO
+            alterados.add(mes)
+            feitas_alt += 1
+            if feitas_alt % (SALVAR_A_CADA * 4) == 0:
+                _gravar(usuario, {m: por_mes_analises[m] for m in alterados})
+                log.info("… alternativas de %d/%d partidas", feitas_alt, len(pend_alt))
     finally:
         engine.quit()
         _gravar(usuario, {m: por_mes_analises[m] for m in alterados})
-    log.info("Análise por motor: %d partidas analisadas", feitas)
+    log.info("Análise por motor: %d partidas analisadas; alternativas de treino em %d partidas", feitas, feitas_alt)
     return feitas

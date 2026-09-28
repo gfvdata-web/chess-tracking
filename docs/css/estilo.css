@@ -367,3 +367,56 @@ tr.linha-partida:focus-visible { outline: 2px solid var(--acento); outline-offse
   .vis__acoes { margin-left: auto; }
   .vis__grafico { padding: 0 12px 12px; }
 }
+
+/* ---------- Abas (Estatísticas / Treino) ---------- */
+.abas { display: flex; gap: 6px; margin-top: 20px; flex-wrap: wrap; }
+.aba {
+  color: #fff; text-decoration: none; font-weight: 600; font-size: .9rem;
+  padding: 7px 16px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .08);
+}
+.aba:hover { background: rgba(255, 255, 255, .18); }
+.aba[aria-current="page"] { background: #fff; color: #1e40af; border-color: #fff; }
+.aba:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.cabecalho--compacto { padding: 32px 0 22px; }
+
+/* ---------- Treino ---------- */
+.treino { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.treino__tabuleiro { min-width: 0; max-width: 560px; width: 100%; justify-self: center; }
+#t-tabuleiro { width: 100%; aspect-ratio: 1; }
+#t-tabuleiro coords { font-size: 10px; font-weight: 600; opacity: .75; color: #7a5a33; }
+#t-tabuleiro coords.files { left: 0; bottom: 0; height: auto; text-transform: none; text-align: right; }
+#t-tabuleiro coords.files coord { padding-right: 3px; }
+.treino__vez { margin: 0 0 8px; font-size: .95rem; }
+.treino__painel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.treino__contexto { font-size: .88rem; display: flex; flex-direction: column; gap: 4px; }
+.treino__meta { color: var(--texto-suave); font-size: .82rem; }
+.treino__meta .ponto { margin-right: 5px; vertical-align: 1px; }
+.treino__chance { margin-top: 4px; }
+.treino__historico { color: var(--texto-suave); font-size: .8rem; }
+.treino__status { border-radius: 10px; padding: 0; font-size: .9rem; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.treino__status:not(:empty) { padding: 12px 14px; border: 1px solid var(--borda); background: var(--superficie); }
+.treino__status--ok { border-color: var(--vitoria) !important; }
+.treino__status--ok > strong:first-child { color: var(--vitoria); }
+.treino__status--erro { border-color: var(--derrota) !important; }
+.treino__status--erro > strong:first-child { color: var(--derrota); }
+.treino__status--aviso { border-color: #d97706 !important; }
+.treino__linha, .treino__partida, .treino__obs { font-size: .84rem; color: var(--texto-suave); }
+.treino__botoes { display: flex; gap: 8px; flex-wrap: wrap; }
+.treino__botoes .botao { margin-top: 0; }
+.botao--primario { background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 600; }
+.botao--primario:hover { filter: brightness(1.08); }
+.botao:disabled { opacity: .45; cursor: not-allowed; }
+.treino__link { font-size: .85rem; }
+.treino__placar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.treino__placar .kpi__valor { font-size: 1.35rem; }
+.treino__ajuda p { color: var(--texto-suave); font-size: .85rem; margin: 6px 0; }
+kbd { font: inherit; font-size: .78rem; border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--superficie-2); }
+.chip__n { font-size: .75rem; opacity: .7; }
+@media (max-width: 900px) {
+  .treino { grid-template-columns: minmax(0, 1fr); }
+  .treino__placar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .treino__placar { grid-template-columns: 1fr 1fr; }
+  .treino main, main:has(.treino) { padding-left: 12px; padding-right: 12px; }
+}

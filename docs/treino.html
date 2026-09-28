@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Treino — Chess Tracking</title>
+  <meta name="description" content="Treino com as posições em que cometi erros graves nas minhas partidas do Chess.com." />
+  <link rel="stylesheet" href="css/estilo.css" />
+  <script>try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+  <script data-goatcounter="https://gfvdata.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+  <div class="tema-switch" id="tema-switch" role="group" aria-label="Tema da página">
+    <button type="button" class="tema-switch__btn" data-tema="light" aria-pressed="false">
+      <span aria-hidden="true">☀️</span><span class="tema-switch__label">Claro</span>
+    </button>
+    <button type="button" class="tema-switch__btn" data-tema="dark" aria-pressed="false">
+      <span aria-hidden="true">🌙</span><span class="tema-switch__label">Escuro</span>
+    </button>
+  </div>
+
+  <header class="cabecalho cabecalho--compacto">
+    <div class="conteiner">
+      <p class="sobrelinha">Chess Tracking · Chess.com</p>
+      <h1>Treino dos meus erros graves</h1>
+      <p class="meta-info" id="meta-treino">Carregando…</p>
+      <nav class="abas" aria-label="Seções">
+        <a class="aba" href="./">Estatísticas</a>
+        <a class="aba" href="treino.html" aria-current="page">Treino</a>
+      </nav>
+    </div>
+  </header>
+
+  <nav class="filtros" aria-label="Filtros do treino">
+    <div class="conteiner filtros__linha">
+      <div class="filtro">
+        <span class="filtro__rotulo">Ritmo</span>
+        <div class="chips" id="t-filtro-ritmo"></div>
+      </div>
+      <div class="filtro">
+        <span class="filtro__rotulo">Fase</span>
+        <div class="chips" id="t-filtro-fase"></div>
+      </div>
+      <div class="filtro">
+        <span class="filtro__rotulo">Ordem</span>
+        <div class="chips" id="t-filtro-modo"></div>
+      </div>
+      <span class="resumo-filtro" id="t-resumo"></span>
+    </div>
+  </nav>
+
+  <main class="conteiner">
+    <div class="treino">
+      <div class="treino__tabuleiro">
+        <p class="treino__vez" id="t-vez"></p>
+        <div class="vis__tabuleiro"><div id="t-tabuleiro"></div></div>
+      </div>
+      <div class="treino__painel">
+        <div class="card treino__contexto" id="t-contexto"></div>
+        <div class="treino__status" id="t-status" aria-live="polite"></div>
+        <div class="treino__botoes">
+          <button type="button" class="botao" id="t-dica">💡 Dica</button>
+          <button type="button" class="botao" id="t-solucao">Ver solução</button>
+          <button type="button" class="botao botao--primario" id="t-proxima">Próxima posição →</button>
+        </div>
+        <a class="treino__link" id="t-link-partida" href="#">Ver este momento na partida ↗</a>
+        <div class="kpis treino__placar" id="t-placar"></div>
+        <details class="dados treino__ajuda">
+          <summary>Como funciona</summary>
+          <p>Cada posição é um momento real de uma partida sua, logo antes de um lance que o Stockfish
+            classificou como <strong>erro grave</strong> (sua chance de vitória caiu 15 pontos ou mais),
+            quando você ainda não estava perdido. Encontre o lance que você deveria ter jogado.</p>
+          <p>Vale o melhor lance do motor e as alternativas quase tão boas (até 5 pontos de chance de
+            vitória abaixo). Você tem 3 tentativas; a dica mostra qual peça mexer. O progresso fica
+            salvo neste navegador — use "Revisar erradas" para repetir as que você não acertou.</p>
+          <p>Atalhos: <kbd>→</kbd> ou <kbd>N</kbd> próxima · <kbd>D</kbd> dica · <kbd>S</kbd> solução.</p>
+        </details>
+      </div>
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <div class="conteiner">
+      <p>Posições tiradas das minhas partidas no Chess.com e analisadas com o Stockfish na atualização diária.
+        Tabuleiro: <a href="https://github.com/lichess-org/chessground" target="_blank" rel="noopener">chessground</a>.</p>
+    </div>
+  </footer>
+
+  <script src="js/treino.js"></script>
+</body>
+</html>

@@ -111,12 +111,28 @@ A página combina esses fatos nos **padrões de vitória e derrota** (`PADROES` 
 - Precisão por jogador pelo método do Lichess (média ponderada pela volatilidade + média
   harmônica). Fica em geral alguns pontos acima da precisão do Chess.com.
 
+### Treino — `treino.py` (análise) e `publicacao/treino.py`
+
+- Posição de treino = a posição antes de um lance meu em que a minha chance de vitória caiu
+  ≥ 15 p.p. (erro grave), desde que eu tivesse ≥ 10% de chance antes (errar numa posição já
+  perdida não ensina nada). Só xadrez padrão.
+- O motor calcula, depois da análise principal e dentro do mesmo orçamento, as 3 melhores
+  jogadas dessas posições (`multipv 3`, profundidade 14) e grava em `alt` da análise da partida.
+- Lances aceitos no treino: o melhor lance da análise principal + alternativas do multipv que
+  perdem no máximo 5 p.p. de chance em relação à melhor. Sem `alt` ainda, só o melhor lance vale.
+- Página: `treino.html` + `js/treino.js`. O tabuleiro só permite lances legais (lista gerada
+  pelo python-chess), 3 tentativas, dica (peça a mexer), solução com a linha do motor e o que
+  foi jogado na partida. Progresso no `localStorage` (chave `treino-progresso-v1`); acerto só
+  conta de primeira e sem dica — o resto volta em "Revisar erradas". Link direto:
+  `treino.html#<uuid>:<ply>`.
+
 ## Publicação: `docs/dados/`
 
 | Arquivo | Conteúdo |
 |---|---|
 | `partidas.json` | tabela colunar `{colunas, linhas}` sem PGN, uma linha por partida: dados da partida, métricas de tempo, fatos de tabuleiro e resumo do motor |
 | `jogos/AAAA-MM.json` | por partida (`uuid`): `fi` posição inicial, `san`/`uci`/`fen` por meio-lance, `clk` relógio, `sal` saldo de material; se analisada, `av`, `mu` (melhor lance), `cl` (classe), `cm` (comentário), `mel` (melhor em SAN), `res` (resumo). Carregado sob demanda pelo visualizador |
+| `treino.json` | posições de treino: FEN, lances legais (`dests`), lance jogado, melhor, aceitos, linha do motor, chance antes/depois e contexto da partida |
 | `perfil.json` | perfil, stats por ritmo, usuário e fuso |
 | `gerado.json` | carimbo da última geração **com mudança** (evita commit diário vazio) |
 
