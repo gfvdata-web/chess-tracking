@@ -253,8 +253,16 @@
     });
   }
 
+  // Meios-lances (1..n) em que eu cometi erro ou erro grave
+  function meusErros() {
+    if (!temAnalise()) return [];
+    const par = minhaCor() === "white" ? 0 : 1;
+    return jogo.cl.map((c, i) => (i % 2 === par && (c === "erro" || c === "erro_grave") ? i + 1 : null)).filter((x) => x != null);
+  }
+
   function irPara(k) {
     ply = Math.max(0, Math.min(jogo.san.length, k));
+    if (partida) history.replaceState(null, "", `#partida=${partida.uuid}${ply ? `&lance=${ply}` : ""}`);
     renderTabuleiro();
     renderJogadores();
     renderComentario();
@@ -263,7 +271,7 @@
   }
 
   // ---------- Abrir / fechar ----------
-  async function abrir(p) {
+  async function abrir(p, lanceInicial = 0) {
     partida = p;
     const dlg = $("visualizador");
     const app = window.ChessApp;
@@ -294,8 +302,10 @@
     }
     renderLances();
     renderResumo();
+    $("vis-nav-erros").hidden = !meusErros().length;
     renderGrafico();
-    irPara(0);
+    irPara(lanceInicial);
+    dlg.focus();
     requestAnimationFrame(() => cg.redrawAll());
   }
 
@@ -318,11 +328,13 @@
       if (acoes[ev.key]) { ev.preventDefault(); acoes[ev.key](); }
       else if (ev.key === "f") { orientacao = orientacao === "white" ? "black" : "white"; irPara(ply); }
     });
-    dlg.querySelector(".vis__nav").addEventListener("click", (ev) => {
+    dlg.querySelector(".vis__esq").addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-nav]");
       if (!b || !jogo) return;
       ({ inicio: () => irPara(0), ant: () => irPara(ply - 1), prox: () => irPara(ply + 1), fim: () => irPara(jogo.san.length),
-         virar: () => { orientacao = orientacao === "white" ? "black" : "white"; irPara(ply); } })[b.dataset.nav]();
+         virar: () => { orientacao = orientacao === "white" ? "black" : "white"; irPara(ply); },
+         "erro-prox": () => { const e = meusErros().find((x) => x > ply); if (e) irPara(e); },
+         "erro-ant": () => { const e = meusErros().filter((x) => x < ply).pop(); if (e) irPara(e); } })[b.dataset.nav]();
     });
     $("vis-lances").addEventListener("click", (ev) => { const b = ev.target.closest("[data-ply]"); if (b) irPara(+b.dataset.ply); });
     $("vis-resumo").addEventListener("click", (ev) => { const b = ev.target.closest("[data-ir]"); if (b) irPara(+b.dataset.ir); });

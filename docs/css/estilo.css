@@ -241,10 +241,11 @@ details.dados table { margin-top: 6px; }
 
 /* Heatmap */
 .heatmap-wrap { overflow-x: auto; padding-bottom: 4px; }
-.heatmap { display: grid; grid-auto-flow: column; grid-template-rows: 14px repeat(7, 12px); gap: 3px; width: max-content; font-size: .68rem; color: var(--texto-suave); }
+.heatmap { --cel: 12px; display: grid; grid-auto-flow: column; grid-template-rows: 14px repeat(7, var(--cel)); gap: 3px; width: max-content; font-size: .68rem; color: var(--texto-suave); }
 .heatmap__mes { grid-row: 1; white-space: nowrap; line-height: 14px; }
-.heatmap__dia-rotulo { line-height: 12px; padding-right: 4px; }
-.cel { width: 12px; height: 12px; border-radius: 3px; background: var(--heat-0); }
+.heatmap__dia-rotulo { line-height: var(--cel); padding-right: 4px; }
+.cel { width: var(--cel, 12px); height: var(--cel, 12px); border-radius: 3px; background: var(--heat-0); }
+.heatmap-legenda .cel { width: 12px; height: 12px; }
 .cel[data-n="1"] { background: var(--heat-1); }
 .cel[data-n="2"] { background: var(--heat-2); }
 .cel[data-n="3"] { background: var(--heat-3); }
@@ -274,10 +275,12 @@ details.dados table { margin-top: 6px; }
 
 /* ---------- Histórico por ritmo (small multiples) ---------- */
 .area-grafico--media { height: 220px; }
-.area-grafico--mini { height: 110px; margin-top: 8px; }
+.area-grafico--mini { height: 110px; }
 .multiplo__topo { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .multiplo__topo h3 { display: flex; gap: 8px; align-items: center; }
 .multiplo__stats { font-size: .82rem; color: var(--texto-suave); }
+.multiplo__rotulo { margin: 14px 0 0; padding-top: 10px; border-top: 1px solid var(--borda); font-size: .78rem; color: var(--texto-suave); }
+.area-grafico--mini { margin-top: 2px; }
 
 /* ---------- Padrões ---------- */
 .padrao {
@@ -326,13 +329,17 @@ tr.linha-partida:focus-visible { outline: 2px solid var(--acento); outline-offse
 .vis__tabuleiro-linha { display: flex; gap: 8px; align-items: stretch; }
 .vis__tabuleiro { flex: 1; min-width: 0; }
 #vis-tabuleiro { width: 100%; aspect-ratio: 1; }
-#vis-tabuleiro .cg-wrap { width: 100%; height: 100%; }
+/* coordenadas dentro das casas (o padrão do chessground desloca as letras 24px para fora) */
+#vis-tabuleiro coords { font-size: 10px; font-weight: 600; opacity: .75; color: #7a5a33; }
+#vis-tabuleiro coords.files { left: 0; bottom: 0; height: auto; text-transform: none; text-align: right; }
+#vis-tabuleiro coords.files coord { padding-right: 3px; }
 .vis__barra-aval { width: 16px; flex: none; border-radius: 4px; background: #334155; position: relative; overflow: hidden; }
 .vis__barra-brancas { position: absolute; left: 0; right: 0; bottom: 0; background: #f1f5f9; transition: height .25s; }
 .vis__barra-aval.invertida .vis__barra-brancas { bottom: auto; top: 0; }
 .vis__barra-aval span { position: absolute; left: 0; right: 0; bottom: 2px; font-size: .56rem; text-align: center; color: #0f172a; font-weight: 700; z-index: 1; }
 .vis__barra-aval[hidden] { display: none; }
-.vis__nav { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+.vis__nav { display: flex; gap: 6px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
+.vis__nav[hidden] { display: none; }
 .vis__dir { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .vis__comentario { background: var(--superficie-2); border-radius: 10px; padding: 10px 12px; font-size: .88rem; min-height: 64px; }
 .vis__comentario strong { display: block; margin-bottom: 2px; }
@@ -355,6 +362,7 @@ tr.linha-partida:focus-visible { outline: 2px solid var(--acento); outline-offse
   .visualizador { width: 100vw; max-width: 100vw; max-height: 100vh; height: 100vh; border-radius: 0; margin: 0; }
   .vis__corpo { grid-template-columns: minmax(0, 1fr); padding: 12px; }
   .vis__lances { max-height: 200px; }
-  .vis__topo { padding: 10px 12px; }
+  .vis__topo { padding: 10px 12px; flex-wrap: wrap; }
+  .vis__acoes { margin-left: auto; }
   .vis__grafico { padding: 0 12px 12px; }
 }

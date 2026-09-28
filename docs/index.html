@@ -86,7 +86,7 @@
 
     <section class="secao">
       <h2 class="titulo-secao">Aberturas</h2>
-      <p class="descricao-secao">Aberturas mais jogadas no período e o resultado em cada uma.</p>
+      <p class="descricao-secao">Aberturas mais jogadas no período e o resultado em cada uma. Clique numa abertura para ver as partidas.</p>
       <div class="card">
         <div class="controles-card">
           <div class="chips" id="aberturas-nivel"></div>
@@ -200,7 +200,7 @@
     </div>
   </footer>
 
-  <dialog class="visualizador" id="visualizador" aria-labelledby="vis-titulo">
+  <dialog class="visualizador" id="visualizador" aria-labelledby="vis-titulo" tabindex="-1">
     <div class="vis__topo">
       <div>
         <h2 class="vis__titulo" id="vis-titulo"></h2>
@@ -225,6 +225,10 @@
           <button type="button" class="botao botao--peq" data-nav="prox" aria-label="Próximo lance">▶</button>
           <button type="button" class="botao botao--peq" data-nav="fim" aria-label="Fim">⏭</button>
           <button type="button" class="botao botao--peq" data-nav="virar" aria-label="Virar tabuleiro">⇅</button>
+        </div>
+        <div class="vis__nav" id="vis-nav-erros" role="group" aria-label="Seus erros" hidden>
+          <button type="button" class="botao botao--peq" data-nav="erro-ant">◀ Seu erro anterior</button>
+          <button type="button" class="botao botao--peq" data-nav="erro-prox">Seu próximo erro ▶</button>
         </div>
       </div>
       <div class="vis__dir">

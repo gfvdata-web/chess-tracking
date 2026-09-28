@@ -411,7 +411,7 @@
     if (!top.length) { $("tabela-aberturas").innerHTML = `<p class="vazio">Sem partidas no filtro atual.</p>`; return; }
     $("tabela-aberturas").innerHTML = `<table>
       <thead><tr><th>Abertura</th><th>ECO</th><th class="num">Partidas</th><th style="min-width:160px">Resultado</th><th class="num">Vitórias</th><th class="num">Pontuação</th></tr></thead>
-      <tbody>${top.map((a) => `<tr>
+      <tbody>${top.map((a) => `<tr class="linha-partida" tabindex="0" data-buscar="${esc(a.nome)}" title="Ver as partidas com esta abertura">
         <td class="abertura-nome">${esc(a.nome)}</td><td>${esc(a.eco)}</td><td class="num">${a.c.n}</td>
         <td>${barraVED(a.c)}</td><td class="num">${pct(a.c.vitoria / a.c.n)}</td><td class="num">${pct(a.c.pontos)}</td></tr>`).join("")}
       </tbody></table>${legendaVED()}`;
@@ -510,7 +510,9 @@
     }
     const el = $("heatmap");
     el.innerHTML = partes.join("");
-    el.style.gridTemplateColumns = `auto repeat(${semana}, 12px)`;
+    const cel = Math.max(10, Math.min(18, Math.floor((el.parentElement.clientWidth - 40) / semana) - 3));
+    el.style.setProperty("--cel", cel + "px");
+    el.style.gridTemplateColumns = `auto repeat(${semana}, ${cel}px)`;
     el.setAttribute("role", "img");
     el.setAttribute("aria-label", `Partidas por dia de ${fmtData(inicio)} a ${fmtData(fim)}: ${[...porDia.values()].reduce((s, l) => s + l.length, 0)} partidas em ${porDia.size} dias.`);
     el.parentElement.scrollLeft = el.scrollWidth;
@@ -571,6 +573,7 @@
     $("multiplos").innerHTML = ritmos.length ? ritmos.map((r) => `<div class="card">
         <div class="multiplo__topo"><h3><span class="ponto" style="background:var(--${r})"></span>${NOME_RITMO[r]}</h3><span class="multiplo__stats" id="mult-stats-${r}"></span></div>
         <div class="area-grafico area-grafico--media"><canvas id="g-mult-${r}"></canvas></div>
+        <p class="multiplo__rotulo">Partidas por mês</p>
         <div class="area-grafico area-grafico--mini"><canvas id="g-mult-mes-${r}"></canvas></div>
         <details class="dados" id="t-mult-${r}"><summary>Ver dados por mês</summary></details>
       </div>`).join("") : `<p class="vazio">Sem partidas no filtro atual.</p>`;
@@ -704,26 +707,25 @@
     const pd = estado.padrao && TODOS_PADROES.find((x) => x.id === estado.padrao);
     $("filtro-padrao").innerHTML = pd ? `<button type="button" class="chip chip--padrao" id="limpar-padrao" aria-label="Remover filtro de padrão">Padrão: ${esc(pd.nome)} ✕</button>` : "";
     $("tabela-recentes").innerHTML = lista.length ? `<p class="nota" style="margin:0 0 6px;color:var(--texto-suave);font-size:.82rem">${fmtInt.format(ps.length)} partidas${ps.length > lista.length ? ` · mostrando as ${lista.length} mais recentes` : ""}</p><table>
-      <thead><tr><th>Data</th><th>Ritmo</th><th>Cor</th><th>Adversário</th><th class="num">Seu rating</th><th>Resultado</th><th>Motivo</th><th>Abertura</th><th class="num">Lances</th><th class="num">Precisão</th><th></th></tr></thead>
+      <thead><tr><th>Data</th><th>Ritmo</th><th>Cor</th><th>Adversário</th><th class="num">Seu rating</th><th>Resultado</th><th>Abertura</th><th class="num">Lances</th><th class="num">Precisão</th><th></th></tr></thead>
       <tbody>${lista.map((p) => `<tr class="linha-partida" tabindex="0" data-uuid="${esc(p.uuid)}" title="Ver lance a lance">
         <td>${fmtData(p.data)} ${String(p.hora).padStart(2, "0")}h</td>
         <td><span class="ponto" style="background:var(--${p.ritmo})"></span> ${NOME_RITMO[p.ritmo] || p.ritmo} <span style="color:var(--texto-suave)">${esc(fmtControle(p.controle))}</span>${p.variante !== "chess" ? ` <span style="color:var(--texto-suave)">(${esc(p.variante)})</span>` : ""}</td>
         <td><span class="peca peca--${p.cor}" title="${p.cor}"></span>${p.cor === "brancas" ? "Brancas" : "Pretas"}</td>
         <td>${esc(p.adversario)} <span style="color:var(--texto-suave)">(${p.adv_rating ?? "—"})</span></td>
         <td class="num">${p.meu_rating ?? "—"}</td>
-        <td><span class="badge badge--${p.resultado}">${nomeRes[p.resultado]}</span></td>
-        <td>${esc(MOTIVOS[p.motivo] || p.motivo)}</td>
+        <td><span class="badge badge--${p.resultado}">${nomeRes[p.resultado]}</span> <span style="color:var(--texto-suave)">${esc((MOTIVOS[p.motivo] || p.motivo).toLowerCase())}</span></td>
         <td class="abertura-nome">${esc(p.abertura || "—")}</td>
         <td class="num">${p.lances}</td>
         <td class="num">${p.precisao_motor != null ? `<span class="icone-analise" title="Precisão estimada pelo Stockfish">◆</span> ${p.precisao_motor.toFixed(1).replace(".", ",")}` : p.precisao != null ? p.precisao.toFixed(1).replace(".", ",") : "—"}</td>
-        <td><button type="button" class="botao botao--peq" data-abrir="${esc(p.uuid)}">▶ Rever</button></td></tr>`).join("")}</tbody></table>`
+        <td><button type="button" class="botao botao--peq" data-abrir="${esc(p.uuid)}" aria-label="Rever partida lance a lance" title="Rever lance a lance">▶</button></td></tr>`).join("")}</tbody></table>`
       : `<p class="vazio">Nenhuma partida com esses filtros.</p>`;
     $("mais-recentes").hidden = ps.length <= estado.recentesN;
   }
 
-  function abrirPartida(uuid) {
+  function abrirPartida(uuid, lance = 0) {
     const p = TODAS.find((x) => x.uuid === uuid);
-    if (p && window.Visualizador) window.Visualizador.abrir(p);
+    if (p && window.Visualizador) window.Visualizador.abrir(p, lance);
   }
 
   function iniciarExplorador() {
@@ -751,7 +753,18 @@
       renderRecentes(filtradas());
       $("secao-partidas").scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    const doHash = () => { const m = location.hash.match(/^#partida=([\w-]+)/); if (m) abrirPartida(m[1]); };
+    const buscarAbertura = (linha) => {
+      estado.busca = linha.dataset.buscar; $("busca").value = estado.busca;
+      estado.padrao = null; estado.recentesN = 20;
+      renderRecentes(filtradas());
+      $("secao-partidas").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    $("tabela-aberturas").addEventListener("click", (ev) => { const l = ev.target.closest("[data-buscar]"); if (l) buscarAbertura(l); });
+    $("tabela-aberturas").addEventListener("keydown", (ev) => {
+      const l = ev.target.closest("[data-buscar]");
+      if (l && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); buscarAbertura(l); }
+    });
+    const doHash = () => { const m = location.hash.match(/^#partida=([\w-]+)(?:&lance=(\d+))?/); if (m) abrirPartida(m[1], +(m[2] || 0)); };
     window.addEventListener("hashchange", doHash);
     doHash();
   }

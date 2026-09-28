@@ -66,4 +66,10 @@ jobs:
             exit 0
           fi
           git commit -m "Atualiza partidas em $(date -u +'%Y-%m-%dT%H:%MZ')"
-          git push
+          # Se alguém commitou código durante a execução, rebaseia antes de enviar
+          # (os arquivos gerados só são escritos por este workflow).
+          for tentativa in 1 2 3; do
+            git push && exit 0
+            git pull --rebase origin main || exit 1
+          done
+          exit 1

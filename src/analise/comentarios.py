@@ -167,7 +167,8 @@ def comentar(fen_inicial_completa: str, ucis: list[str], analise: dict, eu_branc
                     alvo = board_antes.piece_at(chess.Move.from_uci(melhor_uci).to_square)
                     if alvo and VALOR[alvo.piece_type] >= 3:
                         motivo = f"Deixou de capturar {ARTIGO_PECA[NOME_PECA[alvo.piece_type]]}."
-            texto.append(f"{ROTULO[classe]}. {motivo}".strip())
+            if motivo:
+                texto.append(motivo)
             if melhor_san and u != melhor_uci:
                 texto.append(f"Melhor era {melhor_san}.")
             texto.append(f"Avaliação para quem jogou: {fmt_aval(antes * sinal)} → {fmt_aval(depois * sinal)}.")
