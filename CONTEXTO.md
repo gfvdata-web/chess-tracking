@@ -1,7 +1,9 @@
 # CONTEXTO — Chess Tracking
 
 Etapas, contrato de dados e convenções deste repositório. Segue a anatomia dos repositórios
-`fonte-*` e do `painel-status` da conta gfvdata-web (ver `controle-global/GUIA-REPOSITORIOS.md`).
+`fonte-*` da conta gfvdata-web (ver `controle-global/GUIA-REPOSITORIOS.md`, seção "Anatomia de
+um repositório de fonte"). O monitoramento do site (no ar, dados atualizados, acessos) fica no
+`painel-status`, que documenta o que monitora no próprio README.
 
 ## Fonte
 
