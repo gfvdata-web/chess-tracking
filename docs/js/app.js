@@ -279,16 +279,35 @@
     Chart.defaults.color = css("--texto-suave");
     Chart.defaults.borderColor = css("--borda");
     Chart.defaults.maintainAspectRatio = false;
-    Chart.defaults.animation = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? false : { duration: 250 };
+    // Sem animação: cada gráfico desenha na hora e sozinho. Com animação, todos dividem um
+    // único laço do Chart.js — um erro de desenho num gráfico parava esse laço e deixava a
+    // página inteira em branco até recarregar (bug ao filtrar por período).
+    Chart.defaults.animation = false;
     Chart.defaults.plugins.legend.labels.usePointStyle = true;
     Chart.defaults.plugins.legend.labels.boxHeight = 8;
     Chart.defaults.plugins.tooltip.padding = 10;
     Chart.defaults.plugins.tooltip.cornerRadius = 8;
   }
 
+  // Cria (ou recria) um gráfico. Destrói qualquer gráfico preso ao canvas — inclusive um
+  // que falhou no meio da criação — e isola erros: um gráfico com problema mostra um aviso
+  // no lugar, sem derrubar os outros nem travar o canvas para as próximas renderizações.
   function desenhar(id, config) {
-    if (graficos[id]) graficos[id].destroy();
-    graficos[id] = new Chart($(id), config);
+    const canvas = $(id);
+    if (graficos[id]) { try { graficos[id].destroy(); } catch (e) { /* já destruído */ } delete graficos[id]; }
+    const preso = Chart.getChart(canvas);
+    if (preso) preso.destroy();
+    const area = canvas.parentElement;
+    area.querySelector(".erro-grafico")?.remove();
+    canvas.hidden = false;
+    try {
+      graficos[id] = new Chart(canvas, config);
+    } catch (e) {
+      console.error(`Gráfico ${id}:`, e);
+      Chart.getChart(canvas)?.destroy();
+      canvas.hidden = true;
+      area.insertAdjacentHTML("beforeend", `<p class="vazio erro-grafico">Não foi possível desenhar este gráfico com o filtro atual.</p>`);
+    }
   }
 
   // Barras empilhadas V/E/D. modo "pct": 100% empilhado; "n": contagens.
@@ -831,21 +850,12 @@
     const ps = filtradas();
     const c = contar(ps);
     $("resumo-filtro").textContent = `${fmtInt.format(c.n)} partidas no filtro`;
-    renderKPIs(ps);
-    renderRating(ps);
-    renderMultiplos(ps);
-    renderCor(ps);
-    renderForca(ps);
-    renderAberturas(ps);
-    renderFim(ps);
-    renderPadroes(ps);
-    renderMatePeca(ps);
-    renderErros(ps);
-    renderQuando(ps);
-    renderSequencias(ps);
-    renderHeatmap();
-    renderTempo(ps);
-    renderRecentes(ps);
+    // Cada seção isolada: um erro numa delas não impede as demais de atualizar
+    const secoes = [renderKPIs, renderRating, renderMultiplos, renderCor, renderForca, renderAberturas, renderFim,
+      renderPadroes, renderMatePeca, renderErros, renderQuando, renderSequencias, renderHeatmap, renderTempo, renderRecentes];
+    for (const f of secoes) {
+      try { f(ps); } catch (e) { console.error(`Seção ${f.name}:`, e); }
+    }
   }
 
   // ---------- Tema ----------
