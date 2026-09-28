@@ -1,0 +1,8 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+dados/brutos/*
+!dados/brutos/.gitkeep
+.DS_Store
+Thumbs.db

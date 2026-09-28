@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess Tracking — gfvdata-web</title>
+  <meta name="description" content="Histórico e estatísticas de partidas no Chess.com, atualizado diariamente." />
+  <link rel="stylesheet" href="css/estilo.css" />
+  <script>try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+  <script data-goatcounter="https://gfvdata.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+  <div class="tema-switch" id="tema-switch" role="group" aria-label="Tema da página">
+    <button type="button" class="tema-switch__btn" data-tema="light" aria-pressed="false">
+      <span aria-hidden="true">☀️</span><span class="tema-switch__label">Claro</span>
+    </button>
+    <button type="button" class="tema-switch__btn" data-tema="dark" aria-pressed="false">
+      <span aria-hidden="true">🌙</span><span class="tema-switch__label">Escuro</span>
+    </button>
+  </div>
+
+  <header class="cabecalho">
+    <div class="conteiner">
+      <div class="cabecalho__linha">
+        <img class="avatar" id="avatar" alt="" hidden />
+        <div>
+          <p class="sobrelinha">Chess Tracking · Chess.com</p>
+          <h1><a id="nome-usuario" href="#" target="_blank" rel="noopener">Carregando…</a></h1>
+          <p class="meta-info" id="meta-gerado"></p>
+        </div>
+      </div>
+      <div class="ratings" id="ratings"></div>
+    </div>
+  </header>
+
+  <nav class="filtros" aria-label="Filtros">
+    <div class="conteiner filtros__linha">
+      <div class="filtro">
+        <span class="filtro__rotulo">Ritmo</span>
+        <div class="chips" id="filtro-ritmo"></div>
+      </div>
+      <div class="filtro">
+        <span class="filtro__rotulo">Período</span>
+        <div class="chips" id="filtro-periodo"></div>
+        <div class="datas">
+          <input type="date" id="data-de" aria-label="Data inicial" />
+          <span>a</span>
+          <input type="date" id="data-ate" aria-label="Data final" />
+        </div>
+      </div>
+      <span class="resumo-filtro" id="resumo-filtro"></span>
+    </div>
+  </nav>
+
+  <main class="conteiner">
+    <section class="kpis" id="kpis" aria-label="Resumo"></section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Evolução do rating</h2>
+      <p class="descricao-secao">Rating após cada partida ranqueada de xadrez padrão, por ritmo.</p>
+      <div class="card">
+        <div class="area-grafico area-grafico--alta"><canvas id="g-rating"></canvas></div>
+        <details class="dados" id="t-rating"><summary>Ver dados</summary></details>
+      </div>
+    </section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Resultados</h2>
+      <p class="descricao-secao">Vitórias, empates e derrotas no período, no geral e por cor das peças.</p>
+      <div class="grade">
+        <div class="card" id="card-cor"></div>
+        <div class="card">
+          <h3>Contra adversários mais fortes e mais fracos</h3>
+          <p class="nota">Diferença de rating do adversário em relação ao seu, no momento da partida.</p>
+          <div class="area-grafico"><canvas id="g-forca"></canvas></div>
+          <details class="dados" id="t-forca"><summary>Ver dados</summary></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Aberturas</h2>
+      <p class="descricao-secao">Aberturas mais jogadas no período e o resultado em cada uma.</p>
+      <div class="card">
+        <div class="controles-card">
+          <div class="chips" id="aberturas-nivel"></div>
+          <div class="chips" id="aberturas-cor"></div>
+        </div>
+        <div class="tabela-wrap" id="tabela-aberturas"></div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Como as partidas terminam</h2>
+      <p class="descricao-secao" id="desc-empates"></p>
+      <div class="grade">
+        <div class="card">
+          <h3>Vitórias por motivo</h3>
+          <div class="area-grafico area-grafico--baixa"><canvas id="g-fim-vit"></canvas></div>
+          <details class="dados" id="t-fim-vit"><summary>Ver dados</summary></details>
+        </div>
+        <div class="card">
+          <h3>Derrotas por motivo</h3>
+          <div class="area-grafico area-grafico--baixa"><canvas id="g-fim-der"></canvas></div>
+          <details class="dados" id="t-fim-der"><summary>Ver dados</summary></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Quando você joga</h2>
+      <p class="descricao-secao" id="desc-quando"></p>
+      <div class="grade">
+        <div class="card">
+          <h3>Por dia da semana</h3>
+          <div class="area-grafico"><canvas id="g-dia"></canvas></div>
+          <details class="dados" id="t-dia"><summary>Ver dados</summary></details>
+        </div>
+        <div class="card">
+          <h3>Por horário do dia</h3>
+          <div class="area-grafico"><canvas id="g-hora"></canvas></div>
+          <details class="dados" id="t-hora"><summary>Ver dados</summary></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Sequências e atividade</h2>
+      <p class="descricao-secao">Sequências de resultados e partidas por dia nas últimas 53 semanas do período.</p>
+      <div class="kpis" id="sequencias"></div>
+      <div class="card" style="margin-top:16px">
+        <div class="heatmap-wrap"><div class="heatmap" id="heatmap"></div></div>
+        <div class="heatmap-legenda" id="heatmap-legenda"></div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Gestão de tempo</h2>
+      <p class="descricao-secao" id="desc-tempo">A partir do relógio registrado em cada lance (partidas ao vivo).</p>
+      <div class="grade">
+        <div class="card">
+          <h3>Tempo médio por lance, por fase</h3>
+          <p class="nota" id="nota-tempo"></p>
+          <div class="area-grafico"><canvas id="g-tempo"></canvas></div>
+          <details class="dados" id="t-tempo"><summary>Ver dados</summary></details>
+        </div>
+        <div class="card" id="card-apuro"></div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <h2 class="titulo-secao">Partidas recentes</h2>
+      <div class="card">
+        <div class="tabela-wrap" id="tabela-recentes"></div>
+        <button type="button" class="botao" id="mais-recentes" hidden>Mostrar mais</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <div class="conteiner">
+      <p>Dados da <a href="https://www.chess.com/news/view/published-data-api" target="_blank" rel="noopener">API pública do Chess.com</a>,
+        coletados diariamente. Horários no fuso <span id="fuso"></span>.</p>
+    </div>
+  </footer>
+
+  <div class="dica" id="dica" role="tooltip"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

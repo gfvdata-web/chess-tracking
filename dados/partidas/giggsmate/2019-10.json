@@ -1,0 +1,43 @@
+{
+ "usuario": "giggsmate",
+ "mes": "2019-10",
+ "completo": true,
+ "partidas": [
+  {
+   "uuid": "9771adde-de28-11e9-83e2-00000001000b",
+   "url": "https://www.chess.com/game/daily/237859994",
+   "fim_utc": "2019-10-07T17:40:03Z",
+   "inicio_utc": "2019-09-23T17:35:53Z",
+   "data_local": "2019-10-07",
+   "hora_local": 14,
+   "dia_semana": 0,
+   "ritmo": "daily",
+   "controle": "1/1209600",
+   "variante": "chess",
+   "ranqueada": true,
+   "cor": "brancas",
+   "adversario": "BernardoViana",
+   "meu_rating": 788,
+   "adv_rating": 655,
+   "resultado": "derrota",
+   "motivo": "tempo",
+   "codigo_resultado": {
+    "meu": "timeout",
+    "adversario": "win"
+   },
+   "eco": "A40",
+   "abertura": "Queen's Pawn Opening",
+   "abertura_url": "https://www.chess.com/openings/Queens-Pawn-Opening",
+   "abertura_familia": "Queen's Pawn Opening",
+   "lances": 1,
+   "meios_lances": 2,
+   "precisao": null,
+   "precisao_adv": null,
+   "relogios": [
+    0.9,
+    1.4
+   ],
+   "pgn": "[Event \"Let's Play!\"]\n[Site \"Chess.com\"]\n[Date \"2019.09.23\"]\n[Round \"-\"]\n[White \"giggsmate\"]\n[Black \"BernardoViana\"]\n[Result \"0-1\"]\n[CurrentPosition \"rnbqkb1r/pppppppp/7n/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 1 2\"]\n[Timezone \"UTC\"]\n[ECO \"A40\"]\n[ECOUrl \"https://www.chess.com/openings/Queens-Pawn-Opening\"]\n[UTCDate \"2019.09.23\"]\n[UTCTime \"17:35:53\"]\n[WhiteElo \"788\"]\n[BlackElo \"655\"]\n[TimeControl \"1/1209600\"]\n[Termination \"BernardoViana won on time\"]\n[StartTime \"17:35:53\"]\n[EndDate \"2019.10.07\"]\n[EndTime \"17:40:03\"]\n[Link \"https://www.chess.com/game/daily/237859994\"]\n\n1. d4 {[%clk 0:00:00.9]} 1... Nh6 {[%clk 0:00:01.4]} 0-1\n"
+  }
+ ]
+}

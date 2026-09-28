@@ -1,0 +1,58 @@
+{
+ "usuario": "giggsmate",
+ "mes": "2019-12",
+ "completo": true,
+ "partidas": [
+  {
+   "uuid": "6de2f478-b329-11e6-8000-000000010001",
+   "url": "https://www.chess.com/game/live/4354089100",
+   "fim_utc": "2019-12-31T21:35:30Z",
+   "inicio_utc": "2019-12-31T21:33:37Z",
+   "data_local": "2019-12-31",
+   "hora_local": 18,
+   "dia_semana": 1,
+   "ritmo": "blitz",
+   "controle": "300",
+   "variante": "chess",
+   "ranqueada": true,
+   "cor": "pretas",
+   "adversario": "mokonina",
+   "meu_rating": 767,
+   "adv_rating": 874,
+   "resultado": "derrota",
+   "motivo": "abandono",
+   "codigo_resultado": {
+    "meu": "resigned",
+    "adversario": "win"
+   },
+   "eco": "C42",
+   "abertura": "Petrov's Defense",
+   "abertura_url": "https://www.chess.com/openings/Petrovs-Defense",
+   "abertura_familia": "Petrov's Defense",
+   "lances": 9,
+   "meios_lances": 17,
+   "precisao": null,
+   "precisao_adv": null,
+   "relogios": [
+    299.9,
+    299.9,
+    298.6,
+    298.0,
+    288.5,
+    287.2,
+    286.7,
+    284.9,
+    283.9,
+    269.3,
+    281.5,
+    267.1,
+    273.1,
+    262.0,
+    251.3,
+    246.8,
+    246.7
+   ],
+   "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2019.12.31\"]\n[Round \"-\"]\n[White \"mokonina\"]\n[Black \"giggsmate\"]\n[Result \"1-0\"]\n[CurrentPosition \"rnb1k2r/pppp3p/6p1/6B1/1bBP4/8/PPP2PPP/RN1Q1RK1 b kq -\"]\n[Timezone \"UTC\"]\n[ECO \"C42\"]\n[ECOUrl \"https://www.chess.com/openings/Petrovs-Defense\"]\n[UTCDate \"2019.12.31\"]\n[UTCTime \"21:33:37\"]\n[WhiteElo \"874\"]\n[BlackElo \"767\"]\n[TimeControl \"300\"]\n[Termination \"mokonina won by resignation\"]\n[StartTime \"21:33:37\"]\n[EndDate \"2019.12.31\"]\n[EndTime \"21:35:30\"]\n[Link \"https://www.chess.com/game/live/4354089100\"]\n\n1. e4 {[%clk 0:04:59.9]} 1... e5 {[%clk 0:04:59.9]} 2. Nf3 {[%clk 0:04:58.6]} 2... Nf6 {[%clk 0:04:58]} 3. Bc4 {[%clk 0:04:48.5]} 3... g6 {[%clk 0:04:47.2]} 4. Nxe5 {[%clk 0:04:46.7]} 4... Nxe4 {[%clk 0:04:44.9]} 5. Nxf7 {[%clk 0:04:43.9]} 5... Qg5 {[%clk 0:04:29.3]} 6. Nxg5 {[%clk 0:04:41.5]} 6... Nxg5 {[%clk 0:04:27.1]} 7. O-O {[%clk 0:04:33.1]} 7... Bc5 {[%clk 0:04:22]} 8. d4 {[%clk 0:04:11.3]} 8... Bb4 {[%clk 0:04:06.8]} 9. Bxg5 {[%clk 0:04:06.7]} 1-0\n"
+  }
+ ]
+}

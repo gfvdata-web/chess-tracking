@@ -1,0 +1,60 @@
+name: Atualizar partidas
+
+# Coleta diária das partidas no Chess.com (API pública, sem autenticação),
+# retrata o mês corrente, regenera docs/dados/ e commita só se algo mudou.
+# O GitHub Pages (branch main, pasta /docs) republica sozinho a cada push.
+#
+# Horário: 09:17 UTC (06:17 em Brasília) — de madrugada no Brasil, depois das
+# partidas da noite; o minuto quebrado evita o pico de jobs agendados em :00.
+
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+    inputs:
+      completo:
+        description: 'Rebaixar todo o histórico (--completo)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizar-partidas
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Rodar pipeline
+        run: |
+          if [ "${{ inputs.completo }}" = "true" ]; then
+            python run_pipeline.py --completo
+          else
+            python run_pipeline.py
+          fi
+
+      - name: Commitar se algo mudou
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A dados docs
+          if git diff --cached --quiet; then
+            echo 'Nenhuma partida nova; nada a commitar.'
+            exit 0
+          fi
+          git commit -m "Atualiza partidas em $(date -u +'%Y-%m-%dT%H:%MZ')"
+          git push
