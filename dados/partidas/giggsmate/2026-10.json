@@ -220,6 +220,42 @@
     532.0
    ],
    "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2026.10.01\"]\n[Round \"-\"]\n[White \"giggsmate\"]\n[Black \"AnalauAndrade\"]\n[Result \"0-1\"]\n[CurrentPosition \"r2q2k1/ppp3pp/2n1r3/4p3/1P3n2/P4N2/2PQ1PPP/R4K1R w - - 0 20\"]\n[Timezone \"UTC\"]\n[ECO \"C42\"]\n[ECOUrl \"https://www.chess.com/openings/Petrovs-Defense-3.d3-Nc6\"]\n[UTCDate \"2026.10.01\"]\n[UTCTime \"23:29:13\"]\n[WhiteElo \"496\"]\n[BlackElo \"540\"]\n[TimeControl \"600+5\"]\n[Termination \"AnalauAndrade won by resignation\"]\n[StartTime \"23:29:13\"]\n[EndDate \"2026.10.01\"]\n[EndTime \"23:34:51\"]\n[Link \"https://www.chess.com/game/live/184679065916\"]\n\n1. e4 {[%clk 0:10:02.9]} 1... e5 {[%clk 0:10:03.1]} 2. d3 {[%clk 0:10:06.3]} 2... Nc6 {[%clk 0:10:03.3]} 3. Nf3 {[%clk 0:10:09.6]} 3... Nf6 {[%clk 0:10:00]} 4. Be3 {[%clk 0:10:11.1]} 4... d5 {[%clk 0:09:59.4]} 5. exd5 {[%clk 0:10:13.2]} 5... Nxd5 {[%clk 0:10:02.7]} 6. Bg5 {[%clk 0:10:13.8]} 6... f6 {[%clk 0:09:59.7]} 7. Bd2 {[%clk 0:10:14.7]} 7... Bb4 {[%clk 0:09:49.6]} 8. a3 {[%clk 0:10:12.3]} 8... Ba5 {[%clk 0:09:49.9]} 9. b4 {[%clk 0:10:11.3]} 9... Bb6 {[%clk 0:09:47.9]} 10. Nc3 {[%clk 0:09:48.9]} 10... Bd4 {[%clk 0:09:44.5]} 11. Qe2 {[%clk 0:09:41.1]} 11... Bxc3 {[%clk 0:09:29.5]} 12. Bxc3 {[%clk 0:09:44.8]} 12... Nxc3 {[%clk 0:09:29.4]} 13. Qd2 {[%clk 0:09:35.9]} 13... Nd5 {[%clk 0:09:23.3]} 14. d4 {[%clk 0:09:32.9]} 14... O-O {[%clk 0:09:18.9]} 15. Bd3 {[%clk 0:09:19.8]} 15... Re8 {[%clk 0:09:10.4]} 16. dxe5 {[%clk 0:09:17.5]} 16... fxe5 {[%clk 0:09:07.4]} 17. Kf1 {[%clk 0:09:10.4]} 17... Nf4 {[%clk 0:09:05.1]} 18. Bc4+ {[%clk 0:09:05.9]} 18... Be6 {[%clk 0:08:49.8]} 19. Bxe6+ {[%clk 0:09:01]} 19... Rxe6 {[%clk 0:08:52]} 0-1\n"
+  },
+  {
+   "uuid": "2a2c5422-be72-11f1-89b3-683a5601000b",
+   "url": "https://www.chess.com/game/daily/1038147578",
+   "fim_utc": "2026-10-03T05:33:35Z",
+   "inicio_utc": "2026-10-02T15:01:36Z",
+   "data_local": "2026-10-03",
+   "hora_local": 2,
+   "dia_semana": 5,
+   "ritmo": "daily",
+   "controle": "1/86400",
+   "variante": "chess",
+   "ranqueada": true,
+   "cor": "brancas",
+   "adversario": "RBpotpottt",
+   "meu_rating": 790,
+   "adv_rating": 800,
+   "resultado": "vitoria",
+   "motivo": "abandono",
+   "codigo_resultado": {
+    "meu": "win",
+    "adversario": "resigned"
+   },
+   "eco": "C20",
+   "abertura": "King's Pawn Opening",
+   "abertura_url": "https://www.chess.com/openings/Kings-Pawn-Opening-1...e5",
+   "abertura_familia": "King's Pawn Opening",
+   "lances": 1,
+   "meios_lances": 2,
+   "precisao": null,
+   "precisao_adv": null,
+   "relogios": [
+    24.3,
+    5203.3
+   ],
+   "pgn": "[Event \"Let's Play!\"]\n[Site \"Chess.com\"]\n[Date \"2026.10.02\"]\n[Round \"-\"]\n[White \"giggsmate\"]\n[Black \"RBpotpottt\"]\n[Result \"1-0\"]\n[CurrentPosition \"rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2\"]\n[Timezone \"UTC\"]\n[ECO \"C20\"]\n[ECOUrl \"https://www.chess.com/openings/Kings-Pawn-Opening-1...e5\"]\n[UTCDate \"2026.10.02\"]\n[UTCTime \"15:01:36\"]\n[WhiteElo \"790\"]\n[BlackElo \"800\"]\n[TimeControl \"1/86400\"]\n[Termination \"giggsmate won by resignation\"]\n[StartTime \"15:01:36\"]\n[EndDate \"2026.10.03\"]\n[EndTime \"05:33:35\"]\n[Link \"https://www.chess.com/game/daily/1038147578\"]\n\n1. e4 {[%clk 0:00:24.3]} 1... e5 {[%clk 1:26:43.3]} 1-0\n"
   }
  ]
 }
