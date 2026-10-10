@@ -678,7 +678,7 @@
    "variante": "chess",
    "ranqueada": true,
    "cor": "pretas",
-   "adversario": "vedanthiremath",
+   "adversario": "astheticbuddyvedanth",
    "meu_rating": 135,
    "adv_rating": 100,
    "resultado": "vitoria",
@@ -696,7 +696,7 @@
    "precisao": null,
    "precisao_adv": null,
    "relogios": [],
-   "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2026.10.06\"]\n[Round \"-\"]\n[White \"vedanthiremath\"]\n[Black \"giggsmate\"]\n[Result \"0-1\"]\n[Tournament \"https://www.chess.com/tournament/live/3-0-blitz-31112606\"]\n[CurrentPosition \"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"]\n[Timezone \"UTC\"]\n[ECO \"A00\"]\n[ECOUrl \"https://www.chess.com/openings/Undefined\"]\n[UTCDate \"2026.10.06\"]\n[UTCTime \"15:37:44\"]\n[WhiteElo \"100\"]\n[BlackElo \"135\"]\n[TimeControl \"180\"]\n[Termination \"giggsmate won - game abandoned\"]\n[StartTime \"15:37:44\"]\n[EndDate \"2026.10.06\"]\n[EndTime \"15:38:07\"]\n[Link \"https://www.chess.com/game/live/184910519718\"]\n\n0-1\n"
+   "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2026.10.06\"]\n[Round \"-\"]\n[White \"astheticbuddyvedanth\"]\n[Black \"giggsmate\"]\n[Result \"0-1\"]\n[Tournament \"https://www.chess.com/tournament/live/3-0-blitz-31112606\"]\n[CurrentPosition \"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1\"]\n[Timezone \"UTC\"]\n[ECO \"A00\"]\n[ECOUrl \"https://www.chess.com/openings/Undefined\"]\n[UTCDate \"2026.10.06\"]\n[UTCTime \"15:37:44\"]\n[WhiteElo \"100\"]\n[BlackElo \"135\"]\n[TimeControl \"180\"]\n[Termination \"giggsmate won - game abandoned\"]\n[StartTime \"15:37:44\"]\n[EndDate \"2026.10.06\"]\n[EndTime \"15:38:07\"]\n[Link \"https://www.chess.com/game/live/184910519718\"]\n\n0-1\n"
   },
   {
    "uuid": "f2b58542-c19b-11f1-be75-03cfdc01000f",
