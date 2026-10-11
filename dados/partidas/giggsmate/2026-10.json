@@ -1530,6 +1530,43 @@
     8.2
    ],
    "pgn": "[Event \"Let's Play!\"]\n[Site \"Chess.com\"]\n[Date \"2026.10.05\"]\n[Round \"-\"]\n[White \"giggsmate\"]\n[Black \"timby46\"]\n[Result \"1-0\"]\n[CurrentPosition \"7r/6pp/p1Q2k2/B1b1p3/4B1q1/P1N5/1PP2P1P/1K1R4 b - - 0 29\"]\n[Timezone \"UTC\"]\n[ECO \"C20\"]\n[ECOUrl \"https://www.chess.com/openings/Kings-Pawn-Opening-Leonardis-Variation\"]\n[UTCDate \"2026.10.05\"]\n[UTCTime \"22:28:31\"]\n[WhiteElo \"781\"]\n[BlackElo \"744\"]\n[TimeControl \"1/86400\"]\n[Termination \"giggsmate won by resignation\"]\n[StartTime \"22:28:31\"]\n[EndDate \"2026.10.09\"]\n[EndTime \"01:49:31\"]\n[Link \"https://www.chess.com/game/daily/1039819050\"]\n\n1. e4 {[%clk 0:00:00.6]} 1... e5 {[%clk 0:00:04.1]} 2. d3 {[%clk 0:00:04.6]} 2... Ne7 {[%clk 0:00:05.5]} 3. Qf3 {[%clk 0:01:20.3]} 3... d6 {[%clk 0:07:16.8]} 4. Bd2 {[%clk 0:01:38.3]} 4... Be6 {[%clk 0:01:10]} 5. Nc3 {[%clk 0:00:30.1]} 5... Nbc6 {[%clk 0:00:11]} 6. g4 {[%clk 0:00:13.5]} 6... Nb4 {[%clk 0:00:07.9]} 7. O-O-O {[%clk 1:07:41]} 7... Nec6 {[%clk 0:32:38.6]} 8. Nh3 {[%clk 0:00:05.7]} 8... Qe7 {[%clk 0:08:33.6]} 9. Nb5 {[%clk 0:08:21]} 9... a6 {[%clk 0:08:50.7]} 10. Nc3 {[%clk 0:00:22.8]} 10... Na5 {[%clk 0:00:37.8]} 11. Ne2 {[%clk 0:02:10.5]} 11... d5 {[%clk 0:03:03.6]} 12. a3 {[%clk 0:00:07.9]} 12... Nbc6 {[%clk 0:00:43.2]} 13. exd5 {[%clk 0:02:57.6]} 13... Bd7 {[%clk 0:01:33.7]} 14. dxc6 {[%clk 0:01:01.8]} 14... Bxc6 {[%clk 0:01:37.5]} 15. Qe3 {[%clk 1:18:23.2]} 15... O-O-O {[%clk 0:30:13.1]} 16. Rg1 {[%clk 0:16:05.4]} 16... Bd5 {[%clk 0:04:24]} 17. Bxa5 {[%clk 0:00:07.2]} 17... f6 {[%clk 0:00:52]} 18. Qa7 {[%clk 1:36:34.9]} 18... Qd6 {[%clk 0:37:52.3]} 19. d4 {[%clk 0:06:34.5]} 19... Kd7 {[%clk 0:01:22.1]} 20. dxe5 {[%clk 0:00:16.7]} 20... fxe5 {[%clk 0:00:21]} 21. Ng5 {[%clk 0:00:08.6]} 21... Ke7 {[%clk 0:00:43.8]} 22. Bg2 {[%clk 0:00:09.5]} 22... Qg6 {[%clk 0:00:13.9]} 23. Bxd5 {[%clk 0:09:07.2]} 23... Qxg5+ {[%clk 0:00:25.1]} 24. Kb1 {[%clk 0:00:11.3]} 24... c6 {[%clk 0:01:42.9]} 25. Be4 {[%clk 0:01:46.2]} 25... Rxd1+ {[%clk 0:01:41.5]} 26. Rxd1 {[%clk 0:01:10.1]} 26... Qxg4 {[%clk 0:00:13.7]} 27. Qxb7+ {[%clk 0:02:23.5]} 27... Kf6 {[%clk 0:00:08.9]} 28. Nc3 {[%clk 0:04:39.3]} 28... Bc5 {[%clk 0:00:39.2]} 29. Qxc6+ {[%clk 0:00:08.2]} 1-0\n"
+  },
+  {
+   "uuid": "e2003c1a-c44b-11f1-bce8-c40f3101000b",
+   "url": "https://www.chess.com/game/daily/1041941486",
+   "fim_utc": "2026-10-11T01:53:42Z",
+   "inicio_utc": "2026-10-10T01:42:41Z",
+   "data_local": "2026-10-10",
+   "hora_local": 22,
+   "dia_semana": 5,
+   "ritmo": "daily",
+   "controle": "1/86400",
+   "variante": "chess",
+   "ranqueada": true,
+   "cor": "brancas",
+   "adversario": "Mitras_69",
+   "meu_rating": 781,
+   "adv_rating": 827,
+   "resultado": "vitoria",
+   "motivo": "tempo",
+   "codigo_resultado": {
+    "meu": "win",
+    "adversario": "timeout"
+   },
+   "eco": "B01",
+   "abertura": "Scandinavian Defense",
+   "abertura_url": "https://www.chess.com/openings/Scandinavian-Defense-2.e5",
+   "abertura_familia": "Scandinavian Defense",
+   "lances": 2,
+   "meios_lances": 3,
+   "precisao": null,
+   "precisao_adv": null,
+   "relogios": [
+    0.6,
+    4.8,
+    50.8
+   ],
+   "pgn": "[Event \"Let's Play!\"]\n[Site \"Chess.com\"]\n[Date \"2026.10.10\"]\n[Round \"-\"]\n[White \"giggsmate\"]\n[Black \"Mitras_69\"]\n[Result \"1-0\"]\n[CurrentPosition \"rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2\"]\n[Timezone \"UTC\"]\n[ECO \"B01\"]\n[ECOUrl \"https://www.chess.com/openings/Scandinavian-Defense-2.e5\"]\n[UTCDate \"2026.10.10\"]\n[UTCTime \"01:42:41\"]\n[WhiteElo \"781\"]\n[BlackElo \"827\"]\n[TimeControl \"1/86400\"]\n[Termination \"giggsmate won on time\"]\n[StartTime \"01:42:41\"]\n[EndDate \"2026.10.11\"]\n[EndTime \"01:53:42\"]\n[Link \"https://www.chess.com/game/daily/1041941486\"]\n\n1. e4 {[%clk 0:00:00.6]} 1... d5 {[%clk 0:00:04.8]} 2. e5 {[%clk 0:00:50.8]} 1-0\n"
   }
  ]
 }
