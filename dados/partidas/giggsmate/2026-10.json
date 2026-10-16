@@ -1727,8 +1727,8 @@
    "abertura_familia": "King's Pawn Opening",
    "lances": 16,
    "meios_lances": 32,
-   "precisao": null,
-   "precisao_adv": null,
+   "precisao": 66.93,
+   "precisao_adv": 77.94,
    "relogios": [
     45.8,
     0.0,
