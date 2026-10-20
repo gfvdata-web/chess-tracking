@@ -29,7 +29,7 @@
     "loss": 11,
     "draw": 0,
     "time_per_move": 31481,
-    "timeout_percent": 66
+    "timeout_percent": 100
    }
   },
   "chess_rapid": {
@@ -51,9 +51,9 @@
   },
   "chess_blitz": {
    "last": {
-    "rating": 351,
-    "date": 1792263813,
-    "rd": 43
+    "rating": 343,
+    "date": 1792451955,
+    "rd": 44
    },
    "best": {
     "rating": 425,
@@ -62,7 +62,7 @@
    },
    "record": {
     "win": 95,
-    "loss": 91,
+    "loss": 92,
     "draw": 1
    }
   }
