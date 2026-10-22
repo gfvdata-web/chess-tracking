@@ -10,14 +10,14 @@
   "status": "basic",
   "is_streamer": false,
   "verified": false,
-  "league": "Silver",
+  "league": "Crystal",
   "streaming_platforms": []
  },
  "stats": {
   "chess_daily": {
    "last": {
     "rating": 771,
-    "date": 1792591127,
+    "date": 1792675239,
     "rd": 51
    },
    "best": {
@@ -29,7 +29,7 @@
     "win": 116,
     "loss": 116,
     "draw": 3,
-    "time_per_move": 7460,
+    "time_per_move": 7475,
     "timeout_percent": 1
    }
   },
@@ -48,24 +48,24 @@
     "win": 1,
     "loss": 6,
     "draw": 0,
-    "time_per_move": 7460,
+    "time_per_move": 7475,
     "timeout_percent": 0
    }
   },
   "chess_rapid": {
    "last": {
-    "rating": 541,
-    "date": 1792269645,
-    "rd": 42
+    "rating": 544,
+    "date": 1792626213,
+    "rd": 43
    },
    "best": {
     "rating": 893,
     "date": 1534653698,
-    "game": "https://www.chess.com/game/live/184479400636"
+    "game": "https://www.chess.com/game/live/185722440444"
    },
    "record": {
-    "win": 109,
-    "loss": 102,
+    "win": 110,
+    "loss": 103,
     "draw": 7
    }
   },
