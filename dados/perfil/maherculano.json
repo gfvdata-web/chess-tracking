@@ -29,7 +29,7 @@
     "loss": 11,
     "draw": 0,
     "time_per_move": 31481,
-    "timeout_percent": 100
+    "timeout_percent": 0
    }
   },
   "chess_rapid": {
