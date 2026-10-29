@@ -17,7 +17,7 @@
   "chess_daily": {
    "last": {
     "rating": 819,
-    "date": 1793195260,
+    "date": 1793282916,
     "rd": 50
    },
    "best": {
@@ -29,7 +29,7 @@
     "win": 124,
     "loss": 118,
     "draw": 3,
-    "time_per_move": 7451,
+    "time_per_move": 7476,
     "timeout_percent": 1
    }
   },
@@ -48,7 +48,7 @@
     "win": 1,
     "loss": 6,
     "draw": 0,
-    "time_per_move": 7451,
+    "time_per_move": 7476,
     "timeout_percent": 0
    }
   },
