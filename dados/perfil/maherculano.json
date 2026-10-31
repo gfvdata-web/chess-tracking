@@ -51,9 +51,9 @@
   },
   "chess_blitz": {
    "last": {
-    "rating": 365,
-    "date": 1792977811,
-    "rd": 43
+    "rating": 372,
+    "date": 1793459875,
+    "rd": 44
    },
    "best": {
     "rating": 425,
@@ -61,9 +61,9 @@
     "game": "https://www.chess.com/game/live/184114808524"
    },
    "record": {
-    "win": 101,
-    "loss": 95,
-    "draw": 1
+    "win": 103,
+    "loss": 96,
+    "draw": 2
    }
   }
  }
