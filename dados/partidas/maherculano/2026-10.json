@@ -1,7 +1,7 @@
 {
  "usuario": "maherculano",
  "mes": "2026-10",
- "completo": false,
+ "completo": true,
  "partidas": [
   {
    "uuid": "c959a2c9-bea2-11f1-be75-03cfdc01000f",
@@ -1671,8 +1671,8 @@
    "abertura_familia": "King's Pawn Opening",
    "lances": 57,
    "meios_lances": 113,
-   "precisao": null,
-   "precisao_adv": null,
+   "precisao": 73.4,
+   "precisao_adv": 75.76,
    "relogios": [
     295.8,
     296.6,
