@@ -1881,6 +1881,47 @@
     438.9
    ],
    "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2026.11.17\"]\n[Round \"-\"]\n[White \"giggsmate\"]\n[Black \"wilsonmanoplas\"]\n[Result \"0-1\"]\n[CurrentPosition \"5k2/pR4p1/6Qp/3p1p2/5q2/7P/PPP3P1/4r1K1 w - - 2 30\"]\n[Timezone \"UTC\"]\n[ECO \"C20\"]\n[ECOUrl \"https://www.chess.com/openings/Kings-Pawn-Opening-Leonardis-Variation-2...Nf6-3.Nf3\"]\n[UTCDate \"2026.11.17\"]\n[UTCTime \"16:44:44\"]\n[WhiteElo \"495\"]\n[BlackElo \"519\"]\n[TimeControl \"600+5\"]\n[Termination \"wilsonmanoplas won by checkmate\"]\n[StartTime \"16:44:44\"]\n[EndDate \"2026.11.17\"]\n[EndTime \"16:54:46\"]\n[Link \"https://www.chess.com/game/live/187417265298\"]\n\n1. e4 {[%clk 0:10:03.7]} 1... e5 {[%clk 0:10:03.2]} 2. d3 {[%clk 0:10:07.5]} 2... Nf6 {[%clk 0:10:04.6]} 3. Nf3 {[%clk 0:10:10.7]} 3... d5 {[%clk 0:10:06.5]} 4. Nxe5 {[%clk 0:10:13.6]} 4... dxe4 {[%clk 0:10:08.8]} 5. dxe4 {[%clk 0:10:13.5]} 5... Nc6 {[%clk 0:10:12.7]} 6. Bc4 {[%clk 0:10:14.8]} 6... Nxe5 {[%clk 0:10:06.3]} 7. Bf4 {[%clk 0:10:11.7]} 7... Bd6 {[%clk 0:10:06]} 8. O-O {[%clk 0:10:10.6]} 8... Nxe4 {[%clk 0:10:07.3]} 9. Re1 {[%clk 0:09:59.9]} 9... Bf5 {[%clk 0:09:58.3]} 10. Nc3 {[%clk 0:09:52.5]} 10... Nxc4 {[%clk 0:09:16.3]} 11. Bxd6 {[%clk 0:09:48.9]} 11... cxd6 {[%clk 0:09:14.2]} 12. Nxe4 {[%clk 0:09:52.1]} 12... Bxe4 {[%clk 0:09:15.5]} 13. Rxe4+ {[%clk 0:09:55.8]} 13... Kd7 {[%clk 0:09:16.5]} 14. Rxc4 {[%clk 0:09:58.6]} 14... Qe7 {[%clk 0:09:01.6]} 15. Qg4+ {[%clk 0:09:58.4]} 15... Qe6 {[%clk 0:09:00.3]} 16. Qd4 {[%clk 0:09:45.4]} 16... d5 {[%clk 0:08:55.6]} 17. Rd1 {[%clk 0:09:30.2]} 17... Rhe8 {[%clk 0:08:55.4]} 18. h3 {[%clk 0:09:31]} 18... Ke7 {[%clk 0:08:41.1]} 19. Rc3 {[%clk 0:09:16.3]} 19... Rac8 {[%clk 0:08:29.7]} 20. Re3 {[%clk 0:09:04.5]} 20... Rc4 {[%clk 0:08:20.2]} 21. Qd2 {[%clk 0:08:56.7]} 21... Re4 {[%clk 0:08:17.7]} 22. Rb3 {[%clk 0:08:40.4]} 22... Kf8 {[%clk 0:08:17.2]} 23. Rxb7 {[%clk 0:08:36.4]} 23... f5 {[%clk 0:08:11.1]} 24. Qg5 {[%clk 0:08:33.1]} 24... Re1+ {[%clk 0:07:44.9]} 25. Rxe1 {[%clk 0:08:31.7]} 25... Qxe1+ {[%clk 0:07:48.7]} 26. Kh2 {[%clk 0:08:33.7]} 26... Qe5+ {[%clk 0:07:41.8]} 27. f4 {[%clk 0:08:28.9]} 27... h6 {[%clk 0:07:30.2]} 28. Qg6 {[%clk 0:07:47.1]} 28... Qxf4+ {[%clk 0:07:16.8]} 29. Kg1 {[%clk 0:07:44.4]} 29... Re1# {[%clk 0:07:18.9]} 0-1\n"
+  },
+  {
+   "uuid": "2c8d8624-e1da-11f1-8392-dc446201000b",
+   "url": "https://www.chess.com/game/daily/1065783050",
+   "fim_utc": "2026-11-18T12:54:38Z",
+   "inicio_utc": "2026-11-16T16:24:19Z",
+   "data_local": "2026-11-18",
+   "hora_local": 9,
+   "dia_semana": 2,
+   "ritmo": "daily",
+   "controle": "1/86400",
+   "variante": "chess",
+   "ranqueada": true,
+   "cor": "brancas",
+   "adversario": "miladyusofzade",
+   "meu_rating": 812,
+   "adv_rating": 567,
+   "resultado": "vitoria",
+   "motivo": "tempo",
+   "codigo_resultado": {
+    "meu": "win",
+    "adversario": "timeout"
+   },
+   "eco": "C20",
+   "abertura": "King's Pawn Opening Leonardis Variation",
+   "abertura_url": "https://www.chess.com/openings/Kings-Pawn-Opening-Leonardis-Variation",
+   "abertura_familia": "King's Pawn Opening",
+   "lances": 4,
+   "meios_lances": 7,
+   "precisao": null,
+   "precisao_adv": null,
+   "relogios": [
+    0.4,
+    2.5,
+    4.1,
+    814.7,
+    900.9,
+    3123.6,
+    2527.7
+   ],
+   "pgn": "[Event \"Let's Play!\"]\n[Site \"Chess.com\"]\n[Date \"2026.11.16\"]\n[Round \"-\"]\n[White \"giggsmate\"]\n[Black \"miladyusofzade\"]\n[Result \"1-0\"]\n[CurrentPosition \"rnbqk1nr/pppp1ppp/8/b3p3/4P3/2PPB3/PP3PPP/RN1QKBNR b KQkq - 2 4\"]\n[Timezone \"UTC\"]\n[ECO \"C20\"]\n[ECOUrl \"https://www.chess.com/openings/Kings-Pawn-Opening-Leonardis-Variation\"]\n[UTCDate \"2026.11.16\"]\n[UTCTime \"16:24:19\"]\n[WhiteElo \"812\"]\n[BlackElo \"567\"]\n[TimeControl \"1/86400\"]\n[Termination \"giggsmate won on time\"]\n[StartTime \"16:24:19\"]\n[EndDate \"2026.11.18\"]\n[EndTime \"12:54:38\"]\n[Link \"https://www.chess.com/game/daily/1065783050\"]\n\n1. e4 {[%clk 0:00:00.4]} 1... e5 {[%clk 0:00:02.5]} 2. d3 {[%clk 0:00:04.1]} 2... Bb4+ {[%clk 0:13:34.7]} 3. c3 {[%clk 0:15:00.9]} 3... Ba5 {[%clk 0:52:03.6]} 4. Be3 {[%clk 0:42:07.7]} 1-0\n"
   }
  ]
 }
