@@ -6069,6 +6069,52 @@
     4.8
    ],
    "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2026.11.21\"]\n[Round \"-\"]\n[White \"TheFilSky\"]\n[Black \"maherculano\"]\n[Result \"0-1\"]\n[CurrentPosition \"1kr5/1p2Q3/p7/7p/B5p1/2P1B2P/PPN2PP1/3R2K1 w - - 0 37\"]\n[Timezone \"UTC\"]\n[ECO \"C40\"]\n[ECOUrl \"https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation\"]\n[UTCDate \"2026.11.21\"]\n[UTCTime \"22:52:31\"]\n[WhiteElo \"292\"]\n[BlackElo \"331\"]\n[TimeControl \"300\"]\n[Termination \"maherculano won on time\"]\n[StartTime \"22:52:31\"]\n[EndDate \"2026.11.21\"]\n[EndTime \"23:02:42\"]\n[Link \"https://www.chess.com/game/live/187728358914\"]\n\n1. e4 {[%clk 0:04:58]} 1... e5 {[%clk 0:04:51.9]} 2. Nf3 {[%clk 0:04:56.5]} 2... Qf6 {[%clk 0:04:50.8]} 3. Bc4 {[%clk 0:04:53.3]} 3... Nh6 {[%clk 0:04:48.3]} 4. c3 {[%clk 0:04:51.3]} 4... d6 {[%clk 0:04:43.6]} 5. d4 {[%clk 0:04:49.1]} 5... Ng4 {[%clk 0:04:38.5]} 6. Bg5 {[%clk 0:04:35.6]} 6... Qg6 {[%clk 0:04:35.7]} 7. Nbd2 {[%clk 0:04:29.8]} 7... h6 {[%clk 0:04:33.3]} 8. Be3 {[%clk 0:04:24.6]} 8... Nc6 {[%clk 0:04:18.9]} 9. O-O {[%clk 0:04:19.1]} 9... Nf6 {[%clk 0:04:09.6]} 10. Rc1 {[%clk 0:04:15]} 10... Bh3 {[%clk 0:04:08.5]} 11. Nh4 {[%clk 0:03:57.2]} 11... Qh7 {[%clk 0:03:47.4]} 12. Qf3 {[%clk 0:03:47.6]} 12... Nxe4 {[%clk 0:03:35.4]} 13. Qxh3 {[%clk 0:03:34.5]} 13... g5 {[%clk 0:03:28.8]} 14. Nxe4 {[%clk 0:03:19.7]} 14... Qxe4 {[%clk 0:03:24.1]} 15. Nf5 {[%clk 0:03:10.1]} 15... exd4 {[%clk 0:03:16.8]} 16. Nxd4 {[%clk 0:03:02.1]} 16... d5 {[%clk 0:02:54.7]} 17. Bb3 {[%clk 0:02:52.9]} 17... Bd6 {[%clk 0:02:41.3]} 18. Rcd1 {[%clk 0:02:40.5]} 18... Ne5 {[%clk 0:01:31.7]} 19. Qf5 {[%clk 0:01:40.6]} 19... Qd3 {[%clk 0:01:12]} 20. Ba4+ {[%clk 0:01:20.3]} 20... c6 {[%clk 0:01:03.9]} 21. Rxd3 {[%clk 0:01:06.3]} 21... Nxd3 {[%clk 0:01:00.4]} 22. Qxd3 {[%clk 0:01:05]} 22... O-O-O {[%clk 0:00:59.4]} 23. h3 {[%clk 0:00:50.8]} 23... c5 {[%clk 0:00:39.9]} 24. Nc2 {[%clk 0:00:32.8]} 24... c4 {[%clk 0:00:35.6]} 25. Qxd5 {[%clk 0:00:27.9]} 25... Rhe8 {[%clk 0:00:33.8]} 26. Qxc4+ {[%clk 0:00:22.3]} 26... Kb8 {[%clk 0:00:31.1]} 27. Qxf7 {[%clk 0:00:19.4]} 27... Re7 {[%clk 0:00:28.2]} 28. Qc4 {[%clk 0:00:17.4]} 28... Rc7 {[%clk 0:00:25.8]} 29. Qb5 {[%clk 0:00:15.7]} 29... a6 {[%clk 0:00:23.3]} 30. Qd3 {[%clk 0:00:13.4]} 30... Be7 {[%clk 0:00:19]} 31. Qf5 {[%clk 0:00:10.2]} 31... Rd3 {[%clk 0:00:16.8]} 32. Qxd3 {[%clk 0:00:07.9]} 32... Bb4 {[%clk 0:00:14.4]} 33. Qd8+ {[%clk 0:00:06.2]} 33... Rc8 {[%clk 0:00:11.8]} 34. Qd7 {[%clk 0:00:03.9]} 34... Be7 {[%clk 0:00:09.1]} 35. Rd1 {[%clk 0:00:02.7]} 35... h5 {[%clk 0:00:06.3]} 36. Qxe7 {[%clk 0:00:01.4]} 36... g4 {[%clk 0:00:04.8]} 0-1\n"
+  },
+  {
+   "uuid": "185dd0f6-e6b0-11f1-ac9d-eac64901000f",
+   "url": "https://www.chess.com/game/live/187791008520",
+   "fim_utc": "2026-11-22T20:07:14Z",
+   "inicio_utc": "2026-11-22T20:05:42Z",
+   "data_local": "2026-11-22",
+   "hora_local": 17,
+   "dia_semana": 6,
+   "ritmo": "blitz",
+   "controle": "300",
+   "variante": "chess",
+   "ranqueada": true,
+   "cor": "pretas",
+   "adversario": "gricha024",
+   "meu_rating": 339,
+   "adv_rating": 312,
+   "resultado": "vitoria",
+   "motivo": "abandono",
+   "codigo_resultado": {
+    "meu": "win",
+    "adversario": "resigned"
+   },
+   "eco": "C00",
+   "abertura": "French Defense Normal Variation",
+   "abertura_url": "https://www.chess.com/openings/French-Defense-Normal-Variation",
+   "abertura_familia": "French Defense",
+   "lances": 6,
+   "meios_lances": 12,
+   "precisao": null,
+   "precisao_adv": null,
+   "relogios": [
+    299.8,
+    298.1,
+    297.2,
+    288.6,
+    284.0,
+    280.9,
+    277.8,
+    266.0,
+    270.2,
+    262.9,
+    266.0,
+    255.3
+   ],
+   "pgn": "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2026.11.22\"]\n[Round \"-\"]\n[White \"gricha024\"]\n[Black \"maherculano\"]\n[Result \"0-1\"]\n[CurrentPosition \"rnb1k1nr/pppp1ppp/4p3/8/3Pq3/6P1/PbPBBP1P/R2QK1NR w KQkq - 0 7\"]\n[Timezone \"UTC\"]\n[ECO \"C00\"]\n[ECOUrl \"https://www.chess.com/openings/French-Defense-Normal-Variation\"]\n[UTCDate \"2026.11.22\"]\n[UTCTime \"20:05:42\"]\n[WhiteElo \"312\"]\n[BlackElo \"339\"]\n[TimeControl \"300\"]\n[Termination \"maherculano won by resignation\"]\n[StartTime \"20:05:42\"]\n[EndDate \"2026.11.22\"]\n[EndTime \"20:07:14\"]\n[Link \"https://www.chess.com/game/live/187791008520\"]\n\n1. e4 {[%clk 0:04:59.8]} 1... e6 {[%clk 0:04:58.1]} 2. d4 {[%clk 0:04:57.2]} 2... Qh4 {[%clk 0:04:48.6]} 3. Nc3 {[%clk 0:04:44]} 3... Bb4 {[%clk 0:04:40.9]} 4. g3 {[%clk 0:04:37.8]} 4... Bxc3+ {[%clk 0:04:26]} 5. Bd2 {[%clk 0:04:30.2]} 5... Qxe4+ {[%clk 0:04:22.9]} 6. Be2 {[%clk 0:04:26]} 6... Bxb2 {[%clk 0:04:15.3]} 0-1\n"
   }
  ]
 }
