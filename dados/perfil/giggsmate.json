@@ -17,7 +17,7 @@
   "chess_daily": {
    "last": {
     "rating": 819,
-    "date": 1795466694,
+    "date": 1795550277,
     "rd": 50
    },
    "best": {
@@ -26,10 +26,10 @@
     "game": "https://www.chess.com/game/daily/1053887912"
    },
    "record": {
-    "win": 140,
+    "win": 141,
     "loss": 131,
     "draw": 3,
-    "time_per_move": 7610,
+    "time_per_move": 7606,
     "timeout_percent": 6
    }
   },
@@ -48,15 +48,15 @@
     "win": 1,
     "loss": 6,
     "draw": 0,
-    "time_per_move": 7610,
+    "time_per_move": 7606,
     "timeout_percent": 0
    }
   },
   "chess_rapid": {
    "last": {
-    "rating": 488,
-    "date": 1795056857,
-    "rd": 48
+    "rating": 487,
+    "date": 1795522561,
+    "rd": 49
    },
    "best": {
     "rating": 893,
@@ -64,8 +64,8 @@
     "game": "https://www.chess.com/game/live/185722440444"
    },
    "record": {
-    "win": 112,
-    "loss": 112,
+    "win": 113,
+    "loss": 113,
     "draw": 7
    }
   },
