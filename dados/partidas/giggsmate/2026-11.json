@@ -31,8 +31,8 @@
    "abertura_familia": "Owen's Defense",
    "lances": 20,
    "meios_lances": 40,
-   "precisao": null,
-   "precisao_adv": null,
+   "precisao": 59.19,
+   "precisao_adv": 59.42,
    "relogios": [
     2.1,
     184.9,
